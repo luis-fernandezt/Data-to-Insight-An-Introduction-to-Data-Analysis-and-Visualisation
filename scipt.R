@@ -6,11 +6,16 @@ library(iNZightPlots)
 library(FutureLearnData)
 library(colorspace)
 library(viridis)
-library(iNZightTS)
+library(iNZightTS) 
 
 #load data
 
 data <- data(package="FutureLearnData")
+
+#load data ####
+
+data <- data(package="FutureLearnData") 
+
 data(nhanes_1000) 
 
 nhanes_1000[1:10, 1:8] #preview
