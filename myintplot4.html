@@ -1,0 +1,3254 @@
+<!DOCTYPE HTML>
+<!-- template for HTML conversion plot -->
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> iNZight Plot </title>
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+<style> /* layout settings */
+#main {
+  position: fixed;
+  display: flex;
+  width: 100%;
+  top: 60px;
+  height: calc(100% - 60px);
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px;
+  background-color: #e3e3e3;
+  overflow: hidden;
+}
+
+.svg-div, .tbl-div {
+  transition: all ease-in-out 0.5s;
+  padding: 20px;
+  border-radius: 5px;
+  height: 100%;
+  background-color: white;
+  box-shadow: 0 0 3px #B0BEC5;
+  min-width: 50%;
+}
+
+.tbl-div {
+   overflow-x: auto;
+}
+
+/*moveEverything left/right */
+.moveRight {
+  transform: translateX(200%);
+}
+
+.moveLeft {
+  transform: translateX(-200%);
+}
+
+.expand {
+  min-width: 100%;
+  transform: translateX(-50%);
+}
+
+.mid {
+  min-width: 100%;
+  /*transform: translateX(50%);*/
+}
+
+svg {
+  display: inline-block;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+}
+
+/* attempt to use media queries */
+@media (max-width: 600px), (orientation: portrait) {
+
+  #main {
+    position: fixed;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .svg-div, .tbl-div {
+    transition: all ease-in-out 0.5s;
+    width: 100%;
+    min-height: 50%;
+  }
+
+  svg {
+    height: 100%;
+  }
+
+  .tbl-div {
+    overflow-y: auto;
+  }
+
+  /* move everything up/down */
+  .moveRight {
+    transform: translateY(200%);
+  }
+
+  .moveLeft {
+    transform: translateY(-200%);
+  }
+
+  .mid {
+    min-height: 100%;
+    /*transform: translateY(50%);*/
+  }
+
+  .expand {
+    min-height: 100%;
+    transform: translateY(-50%);
+  }
+
+  label {
+    display: none;
+  }
+
+}
+
+/* navigation bar */
+#control {
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 60px;
+  background-color: #12508a;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: right;
+  font-size: 15px;
+  margin: 5px;
+  transition: all ease 0.3s;
+  padding: 7px;
+  border-radius: 3px;
+}
+
+.menu li:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.glyphicon {
+  font-size: 15px;
+}
+
+#selectVar {
+  height: 45px;
+}
+
+.form-div {
+  margin: 15px 0px;
+}
+
+label {
+  color: rgba(255, 255, 255, 0.8);
+  margin-right: 5px;
+  font-weight: normal;
+}
+
+/* style help overlay */
+.help-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: -1;
+  transition: all ease 0.5s;
+  overflow-y: auto;
+}
+
+.help-info {
+  padding: 10px;
+  margin: auto;
+  color: black;
+  background-color: white;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.title {
+  font-size: 25px;
+}
+
+.move {
+  opacity: 1;
+  z-index: 5;
+}
+
+.logo {
+  width: 20%;
+}
+
+/*** TABLE PROPERTIES ***/
+/*totals column  or totals row */
+table {
+  width: 100% !important;
+}
+
+td, th {
+  text-align: center;
+  word-wrap: break-word;
+  font-size: 12px;
+}
+
+/* table headings */
+.headings {
+  font-style: italic;
+  font-weight:normal;
+  text-decoration: underline;
+  text-align: center;
+  align: center;
+}
+
+/* groups for two way bar plots */
+.yGroup, .tc {
+  text-align: center;
+  font-weight: bold;
+}
+
+.Percentage {
+  background-color:rgb(0, 0, 255);
+  color: white;
+  opacity: 0.75;
+  margin-left: 10px;
+}
+
+.Count {
+ background-color: purple;
+ opacity: 0.75;
+ color: white;
+ margin-left: 10px;
+}
+
+.trend-info, .brush-info {
+  color: white;
+}
+
+/* textlabels */
+.label {
+  font-size: 10;
+  fill: black;
+  stroke: none;
+  fill-opacity: 1;
+  text-anchor: middle;
+  visibility: inherit;
+  font-weight: normal;
+}
+
+/* BAR PROPERTIES (for bar charts) */
+.bar {
+  stroke: none;
+  visibility: visible;
+  opacity: 1;
+}
+
+.bar:hover {
+  stroke-width: 50%;
+  fill-opacity: 0.5;
+}
+
+/* upon selection */
+.selected {
+  opacity: 1;
+  visibility: visible;
+}
+
+.none {
+  opacity: 0.2;
+}
+
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+
+/*highlighting data */
+.totalRow, .tabSelect, .select {
+  align: center;
+  font-weight: bold;
+}
+
+.rowSelect {
+  display: table-row;
+  opacity: 1;
+}
+
+/* legend interactions and styling */
+.show {
+  font-size: 115%;
+  fill-opacity: 0.5;
+}
+
+.out {
+  font-size: 100%;
+  fill-opacity: 1;
+}
+
+.keyText {
+  fill: black;
+}
+
+/* for box plots - dot plots, histograms */
+.box {
+  fill: gray;
+  fill-opacity: 0.5;
+}
+
+.fillBox {
+  fill-opacity: 0.2;
+}
+
+/* for dot plots and scatter plots */
+.point:hover { /* showPoint */
+  fill: currentColor;
+  stroke-width: 50%;
+  fill-opacity: 1;
+}
+
+/* for histograms and hexbins */
+.histBar {
+  stroke: white;
+  stroke-width: 0.25;
+}
+
+.hexbin {
+  stroke: none;
+}
+
+.hexbin:hover, .histBar:hover {
+  fill-opacity: 0.5;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 5px;
+    z-index: 5;
+    opacity: 1;
+    visibility: hidden;
+    font: 11px sans-serif;
+    background: white;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+span {
+  font-weight: bold;
+}
+
+/* for iNZightMaps */
+.selectRegion {
+  stroke: darkgray;
+  fill: black;
+  fill-opacity: 0.5;
+}
+
+/* line chart container */
+.spark-div {
+  width: 100%;
+  padding: 10px;
+  clear: left;
+}
+
+/* ggplot2 theme for sparkline chart */
+.grid-background {
+  fill: #ddd;
+}
+
+.spark-xaxis path, .spark-yaxis path {
+  display: none;
+}
+
+.grid-lines {
+  stroke: #fff;
+  stroke-width: 0.75px;
+}
+
+.grid path {
+  display: none;
+}
+
+.minor {
+  stroke-opacity: 0.5;
+  stroke-width: 0.5px;
+}
+
+.grid text {
+  display: none;
+}
+
+/* lines on the chart */
+.spark-line {
+  fill: none;
+  stroke: black;
+  opacity: 0.2;
+  stroke-width: 1.5;
+}
+
+.follow-text {
+    stroke: white;
+    fill: black;
+    stroke-width: 0.05;
+    font-size: 12px;
+    text-anchor: middle;
+}
+
+.region-lab {
+  font-size: 13px;
+}
+
+.x-lab, .spark-title, .main-title {
+  text-anchor: middle;
+}
+
+.x-lab, .y-lab {
+  font-size: 16px;
+}
+
+.main-title, .spark-title {
+  fill: black;
+  fill-opacity: 1;
+  font-size: 18px;
+}
+
+.x-line {
+  stroke: black;
+  stroke-width: 0.5;
+}
+
+/* time slider */
+.slider-div {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  height: 5px;
+  border-radius: 5px;
+  background: lightgray;
+  width: calc(100% - 15px);
+  display: inline-block;
+}
+
+/* circle thumb */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: black;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.slider-val {
+  width: 55px;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  line-height: 12px;
+  margin: auto;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: darkgray;
+}
+
+/* play-pause button */
+.play-pause {
+    text-align: center;
+    margin: auto;
+    width: 100%;
+}
+
+.group-mean-label {
+  pointer-events: none;
+} </style>
+    <script type = "text/javascript" src = "https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
+    <script type = "text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type = "text/javascript" src ="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"> </script>
+    <script type = "text/javascript" charset="utf8" src = "https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+  </head>
+  <body>
+    <!-- control panel -->
+    <div class = "control" id = "control">
+      <ul class = "menu">
+        <li class = "plot"> <span class="glyphicon glyphicon-stats"></span> Plot </li>
+        <li class = "view-tbl"><span class="glyphicon glyphicon-list-alt"></span> Table </li>
+        <li class = "reset" id = "reset"> <span class="glyphicon glyphicon-refresh"></span> Reset </li>
+        <li class = "help"><span class = "glyphicon glyphicon-question-sign"> </span> </li>
+      </ul>
+    </div>
+    <div id = "main">
+      <div class = "svg-div">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="326px" height="368px" viewBox="0 0 326 368" version="1.1">
+  <metadata xmlns:gridsvg="http://www.stat.auckland.ac.nz/~paul/R/gridSVG/">
+    <gridsvg:generator name="gridSVG" version="1.7-5" time="2025-04-29 18:42:54.186994"/>
+    <gridsvg:argument name="name" value=""/>
+    <gridsvg:argument name="exportCoords" value="none"/>
+    <gridsvg:argument name="exportMappings" value="none"/>
+    <gridsvg:argument name="exportJS" value="none"/>
+    <gridsvg:argument name="res" value="76"/>
+    <gridsvg:argument name="prefix" value=""/>
+    <gridsvg:argument name="addClasses" value="FALSE"/>
+    <gridsvg:argument name="indent" value="TRUE"/>
+    <gridsvg:argument name="htmlWrapper" value="FALSE"/>
+    <gridsvg:argument name="usePaths" value="vpPaths"/>
+    <gridsvg:argument name="uniqueNames" value="TRUE"/>
+    <gridsvg:separator name="id.sep" value="."/>
+    <gridsvg:separator name="gPath.sep" value="::"/>
+    <gridsvg:separator name="vpPath.sep" value="::"/>
+  </metadata>
+  <g transform="translate(0, 368) scale(1, -1)">
+    <g id="gridSVG" fill="rgb(255,255,255)" stroke="rgb(0,0,0)" stroke-dasharray="none" stroke-width="0.79" font-size="12.67" font-family="Helvetica, Arial, FreeSans, Liberation Sans, Nimbus Sans L, sans-serif" opacity="1" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill-opacity="1" font-weight="normal" font-style="normal">
+      <defs>
+        <symbol id="gridSVG.pch21" viewBox="-5 -5 10 10" overflow="visible">
+          <circle cx="0" cy="0" r="3.75"/>
+        </symbol>
+      </defs>
+      <g id="container.1" font-size="12.67">
+        <g id="container::VP:TOPlayout.1">
+          <g id="container::VP:TOPlayout::GRID.VP.884.1"/>
+          <g id="container::VP:TOPlayout::GRID.VP.885.1">
+            <g id="inz-main-title.1">
+              <g id="inz-main-title.1.1" transform="translate(204, 448)" stroke-width="0.1">
+                <g id="inz-main-title.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-main-title.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="15.2">
+                    <tspan id="inz-main-title.1.1.tspan.1" dy="6" x="0">ChildrenPerWoman by Region</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.2" font-size="12.67">
+        <g id="container::VP:TOPlayout.2">
+          <g id="container::VP:TOPlayout::GRID.VP.886.1">
+            <g id="inz-ylab.1">
+              <g id="inz-ylab.1.1" transform="translate(9.12, 242.5)" stroke-width="0.1">
+                <g id="inz-ylab.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-ylab.1.1.text" transform="rotate(-90)" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="12.67">
+                    <tspan id="inz-ylab.1.1.tspan.1" dy="5.5" x="0">Region</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.3" font-size="12.67">
+        <g id="container::VP:TOPlayout.3">
+          <g id="container::VP:TOPlayout::GRID.VP.887.1">
+            <g id="inz-xlab.1">
+              <g id="inz-xlab.1.1" transform="translate(213.66, 25.12)" stroke-width="0.1">
+                <g id="inz-xlab.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-xlab.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="12.67">
+                    <tspan id="inz-xlab.1.1.tspan.1" dy="5.5" x="0">ChildrenPerWoman</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.4" font-size="12.67">
+        <g id="container::VP:TOPlayout.4">
+          <g id="container::VP:TOPlayout::GRID.VP.888.1">
+            <g id="inz-main-sub-bottom.1">
+              <g id="inz-main-sub-bottom.1.1" transform="translate(213.66, 8)" stroke-width="0.1">
+                <g id="inz-main-sub-bottom.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-main-sub-bottom.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                    <tspan id="inz-main-sub-bottom.1.1.tspan.1" dy="4" x="0">59 missing values (39 in ChildrenPerWoman)</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.5" font-size="12.67">
+        <g id="container::VP:TOPlayout.5">
+          <g id="container::VP:TOPlayout::GRID.VP.889.1">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.1"/>
+          </g>
+        </g>
+      </g>
+      <g id="container.6" font-size="12.67">
+        <g id="container::VP:TOPlayout.6">
+          <g id="container::VP:TOPlayout::GRID.VP.889.2">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.2">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.1" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.1">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.1.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.1.clipPath)">
+                    <g id="inz-plot-bg.1.1.1">
+                      <rect id="inz-plot-bg.1.1.1.1" x="57.32" y="73.32" width="312.68" height="338.36" transform="" fill="rgb(238,238,238)" stroke-dasharray="none" fill-opacity="1"/>
+                    </g>
+                    <g id="inz-x-grid.1.1.1">
+                      <polyline id="inz-x-grid.1.1.1.1" points="69.36,73.32 69.36,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.2" points="112.84,73.32 112.84,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.3" points="156.31,73.32 156.31,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.4" points="199.79,73.32 199.79,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.5" points="243.27,73.32 243.27,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.6" points="286.75,73.32 286.75,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.7" points="330.22,73.32 330.22,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.8" points="373.7,73.32 373.7,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                    </g>
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.1.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.1.clipPath)"/>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.7" font-size="12.67">
+        <g id="container::VP:TOPlayout.7">
+          <g id="container::VP:TOPlayout::GRID.VP.889.3">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.3">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.2" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.2">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.2.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.2" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.2.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.2.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.2" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.2.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.892.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.892::GRID.VP.893.1">
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.892::GRID.VP.893::GRID.VP.894.1"/>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.8" font-size="12.67">
+        <g id="container::VP:TOPlayout.8">
+          <g id="container::VP:TOPlayout::GRID.VP.889.4">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.4">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.3" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.3">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.3.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.3" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.3.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.3.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.3" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.3.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895::GRID.VP.896.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895::GRID.VP.896::GRID.VP.897.1.clipPath">
+                              <rect x="57.32" y="355.29" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895::GRID.VP.896::GRID.VP.897.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895::GRID.VP.896::GRID.VP.897.1.clipPath)">
+                            <g id="inz-box.1.1.1.1">
+                              <polygon id="inz-box.1.1.1.1.1" points="108.85,358.11 108.85,366.57 124.34,366.57 124.34,358.11" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.1.1.2" points="124.34,358.11 124.34,366.57 141.89,366.57 141.89,358.11" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.1.1">
+                              <polyline id="inz-box-line.1.1.1.1.1" points="91.01,362.34 108.85,362.34" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.1.1.2" points="141.89,362.34 204.96,362.34" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.895::GRID.VP.896::VP:plotregion-1.1">
+                            <g id="inz-DOTPOINTS.1.1.1.1">
+                              <use id="inz-DOTPOINTS.1.1.1.1.1" href="#gridSVG.pch21" x="91.01" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,31,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.2" href="#gridSVG.pch21" x="98.96" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,38,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.3" href="#gridSVG.pch21" x="99.45" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.4" href="#gridSVG.pch21" x="100.92" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.5" href="#gridSVG.pch21" x="103.97" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,222,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.6" href="#gridSVG.pch21" x="105.49" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,199,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.7" href="#gridSVG.pch21" x="107.97" y="376.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,69,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.8" href="#gridSVG.pch21" x="108.01" y="377.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,153,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.9" href="#gridSVG.pch21" x="108.36" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,176,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.10" href="#gridSVG.pch21" x="108.75" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.11" href="#gridSVG.pch21" x="108.88" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,84,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.12" href="#gridSVG.pch21" x="111.53" y="376.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.13" href="#gridSVG.pch21" x="113.4" y="377.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.14" href="#gridSVG.pch21" x="116.05" y="379.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,54,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.15" href="#gridSVG.pch21" x="117.49" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,99,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.16" href="#gridSVG.pch21" x="117.71" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.17" href="#gridSVG.pch21" x="118.58" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.18" href="#gridSVG.pch21" x="119.97" y="376.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,99,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.19" href="#gridSVG.pch21" x="123.31" y="377.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,145,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.20" href="#gridSVG.pch21" x="123.58" y="379.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.21" href="#gridSVG.pch21" x="125.1" y="381.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,122,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.22" href="#gridSVG.pch21" x="126.71" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,176,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.23" href="#gridSVG.pch21" x="127.88" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,161,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.24" href="#gridSVG.pch21" x="129.66" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,168,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.25" href="#gridSVG.pch21" x="130.49" y="376.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,229,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.26" href="#gridSVG.pch21" x="131.53" y="377.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,184,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.27" href="#gridSVG.pch21" x="135.92" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,153,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.28" href="#gridSVG.pch21" x="138.01" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,191,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.29" href="#gridSVG.pch21" x="139.27" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,191,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.30" href="#gridSVG.pch21" x="141.18" y="376.06" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.31" href="#gridSVG.pch21" x="144.01" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(250,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.32" href="#gridSVG.pch21" x="144.49" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,245,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.33" href="#gridSVG.pch21" x="145.14" y="374.39" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(150,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.34" href="#gridSVG.pch21" x="152.27" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,184,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.35" href="#gridSVG.pch21" x="159.05" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,229,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.36" href="#gridSVG.pch21" x="167.49" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.37" href="#gridSVG.pch21" x="168.18" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,245,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.38" href="#gridSVG.pch21" x="177.05" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(74,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.39" href="#gridSVG.pch21" x="178.05" y="372.72" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,209)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.1.1.40" href="#gridSVG.pch21" x="204.96" y="371.05" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(173,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.1.1">
+                              <g id="inz-group-label.1.1.1" transform="translate(60.45, 410.83)" stroke-width="0.1">
+                                <g id="inz-group-label.1.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.1.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.1.1.1.tspan.1" dy="10" x="0">America</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.9" font-size="12.67">
+        <g id="container::VP:TOPlayout.9">
+          <g id="container::VP:TOPlayout::GRID.VP.889.5">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.5">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.4" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.4">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.4.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.4" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.4.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.4.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.4" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.4.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898::GRID.VP.899.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898::GRID.VP.899::GRID.VP.900.1.clipPath">
+                              <rect x="57.32" y="298.89" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898::GRID.VP.899::GRID.VP.900.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898::GRID.VP.899::GRID.VP.900.1.clipPath)">
+                            <g id="inz-box.1.1.2.1">
+                              <polygon id="inz-box.1.1.2.1.1" points="111.93,301.71 111.93,310.17 125.64,310.17 125.64,301.71" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.2.1.2" points="125.64,301.71 125.64,310.17 166.14,310.17 166.14,301.71" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.2.1">
+                              <polyline id="inz-box-line.1.1.2.1.1" points="71.53,305.94 111.93,305.94" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.2.1.2" points="166.14,305.94 307.57,305.94" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.898::GRID.VP.899::VP:plotregion-2.1">
+                            <g id="inz-DOTPOINTS.1.1.2.1">
+                              <use id="inz-DOTPOINTS.1.1.2.1.1" href="#gridSVG.pch21" x="71.53" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.2" href="#gridSVG.pch21" x="81.53" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,0,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.3" href="#gridSVG.pch21" x="84.27" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,8,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.4" href="#gridSVG.pch21" x="90.1" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,138,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.5" href="#gridSVG.pch21" x="96.75" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,168,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.6" href="#gridSVG.pch21" x="106.84" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,207,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.7" href="#gridSVG.pch21" x="110.92" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,31,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.8" href="#gridSVG.pch21" x="114.97" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,26)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.9" href="#gridSVG.pch21" x="115.1" y="318" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,61,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.10" href="#gridSVG.pch21" x="116.97" y="319.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,61,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.11" href="#gridSVG.pch21" x="118.18" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,38,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.12" href="#gridSVG.pch21" x="119.62" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.13" href="#gridSVG.pch21" x="122.44" y="318" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.14" href="#gridSVG.pch21" x="128.84" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(196,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.15" href="#gridSVG.pch21" x="133.66" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(173,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.16" href="#gridSVG.pch21" x="135.84" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.17" href="#gridSVG.pch21" x="144.84" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,207,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.18" href="#gridSVG.pch21" x="158.53" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(28,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.19" href="#gridSVG.pch21" x="162.1" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,64)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.20" href="#gridSVG.pch21" x="167.49" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(219,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.21" href="#gridSVG.pch21" x="182.75" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,184,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.22" href="#gridSVG.pch21" x="200.31" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,122,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.23" href="#gridSVG.pch21" x="202.7" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,110)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.24" href="#gridSVG.pch21" x="215.4" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(189,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.25" href="#gridSVG.pch21" x="218.31" y="316.33" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,168,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.2.1.26" href="#gridSVG.pch21" x="307.57" y="314.66" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,140)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.2.1">
+                              <g id="inz-group-label.2.1.1" transform="translate(60.45, 354.44)" stroke-width="0.1">
+                                <g id="inz-group-label.2.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.2.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.2.1.1.tspan.1" dy="10" x="0">East Asia &amp; Pacific</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.10" font-size="12.67">
+        <g id="container::VP:TOPlayout.10">
+          <g id="container::VP:TOPlayout::GRID.VP.889.6">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.6">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.5" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.5">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.5.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.5" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.5.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.5.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.5" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.5.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901::GRID.VP.902.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901::GRID.VP.902::GRID.VP.903.1.clipPath">
+                              <rect x="57.32" y="242.5" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901::GRID.VP.902::GRID.VP.903.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901::GRID.VP.902::GRID.VP.903.1.clipPath)">
+                            <g id="inz-box.1.1.3.1">
+                              <polygon id="inz-box.1.1.3.1.1" points="87.17,245.32 87.17,253.78 90.34,253.78 90.34,245.32" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.3.1.2" points="90.34,245.32 90.34,253.78 108.42,253.78 108.42,245.32" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.3.1">
+                              <polyline id="inz-box-line.1.1.3.1.1" points="78.84,249.55 87.17,249.55" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.3.1.2" points="108.42,249.55 186.88,249.55" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.901::GRID.VP.902::VP:plotregion-3.1">
+                            <g id="inz-DOTPOINTS.1.1.3.1">
+                              <use id="inz-DOTPOINTS.1.1.3.1.1" href="#gridSVG.pch21" x="78.84" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,61,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.2" href="#gridSVG.pch21" x="82.79" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,61,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.3" href="#gridSVG.pch21" x="83.84" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,54,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.4" href="#gridSVG.pch21" x="83.88" y="261.6" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,46,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.5" href="#gridSVG.pch21" x="84.14" y="263.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,145,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.6" href="#gridSVG.pch21" x="84.92" y="264.94" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.7" href="#gridSVG.pch21" x="85.36" y="266.61" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.8" href="#gridSVG.pch21" x="85.75" y="268.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,46,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.9" href="#gridSVG.pch21" x="86.05" y="269.94" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,107,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.10" href="#gridSVG.pch21" x="86.4" y="271.61" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.11" href="#gridSVG.pch21" x="86.75" y="273.28" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,191,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.12" href="#gridSVG.pch21" x="87.01" y="274.95" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,61,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.13" href="#gridSVG.pch21" x="87.23" y="276.61" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.14" href="#gridSVG.pch21" x="87.45" y="278.28" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,46,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.15" href="#gridSVG.pch21" x="87.49" y="279.95" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,54,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.16" href="#gridSVG.pch21" x="87.58" y="281.62" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,31,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.17" href="#gridSVG.pch21" x="87.79" y="283.29" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.18" href="#gridSVG.pch21" x="88.14" y="284.95" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,38,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.19" href="#gridSVG.pch21" x="88.18" y="286.62" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,115,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.20" href="#gridSVG.pch21" x="88.23" y="288.29" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.21" href="#gridSVG.pch21" x="88.23" y="289.96" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,8,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.22" href="#gridSVG.pch21" x="88.75" y="291.63" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,115,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.23" href="#gridSVG.pch21" x="89.31" y="293.29" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.24" href="#gridSVG.pch21" x="89.88" y="294.96" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.25" href="#gridSVG.pch21" x="90.79" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.26" href="#gridSVG.pch21" x="91.14" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,84,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.27" href="#gridSVG.pch21" x="96.27" y="261.6" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.28" href="#gridSVG.pch21" x="96.58" y="263.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,0,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.29" href="#gridSVG.pch21" x="100.75" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,69,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.30" href="#gridSVG.pch21" x="102.45" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,184,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.31" href="#gridSVG.pch21" x="102.97" y="261.6" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.32" href="#gridSVG.pch21" x="103.62" y="263.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,222,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.33" href="#gridSVG.pch21" x="104.97" y="264.94" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.34" href="#gridSVG.pch21" x="106.31" y="266.61" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,8,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.35" href="#gridSVG.pch21" x="107.23" y="268.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,31,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.36" href="#gridSVG.pch21" x="108.15" y="269.94" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.37" href="#gridSVG.pch21" x="109.23" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,8,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.38" href="#gridSVG.pch21" x="111.1" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,8,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.39" href="#gridSVG.pch21" x="111.66" y="261.6" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,15,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.40" href="#gridSVG.pch21" x="112.23" y="263.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(89,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.41" href="#gridSVG.pch21" x="112.92" y="264.94" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.42" href="#gridSVG.pch21" x="117.97" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,0,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.43" href="#gridSVG.pch21" x="119.23" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,161,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.44" href="#gridSVG.pch21" x="132.71" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(59,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.45" href="#gridSVG.pch21" x="133.79" y="259.93" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,79)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.46" href="#gridSVG.pch21" x="135.01" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,252,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.47" href="#gridSVG.pch21" x="148.27" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.3.1.48" href="#gridSVG.pch21" x="186.88" y="258.27" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,133)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.3.1">
+                              <g id="inz-group-label.3.1.1" transform="translate(60.45, 298.05)" stroke-width="0.1">
+                                <g id="inz-group-label.3.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.3.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.3.1.1.tspan.1" dy="10" x="0">Europe &amp; Central Asia</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.11" font-size="12.67">
+        <g id="container::VP:TOPlayout.11">
+          <g id="container::VP:TOPlayout::GRID.VP.889.7">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.7">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.6" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.6">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.6.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.6" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.6.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.6.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.6" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.6.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904::GRID.VP.905.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904::GRID.VP.905::GRID.VP.906.1.clipPath">
+                              <rect x="57.32" y="186.11" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904::GRID.VP.905::GRID.VP.906.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904::GRID.VP.905::GRID.VP.906.1.clipPath)">
+                            <g id="inz-box.1.1.4.1">
+                              <polygon id="inz-box.1.1.4.1.1" points="122.51,188.93 122.51,197.39 143.4,197.39 143.4,188.93" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.4.1.2" points="143.4,188.93 143.4,197.39 161.74,197.39 161.74,188.93" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.4.1">
+                              <polyline id="inz-box-line.1.1.4.1.1" points="94.14,193.16 122.51,193.16" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.4.1.2" points="161.74,193.16 250.35,193.16" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.904::GRID.VP.905::VP:plotregion-4.1">
+                            <g id="inz-DOTPOINTS.1.1.4.1">
+                              <use id="inz-DOTPOINTS.1.1.4.1.1" href="#gridSVG.pch21" x="94.14" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,92,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.2" href="#gridSVG.pch21" x="107.62" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,199,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.3" href="#gridSVG.pch21" x="110.58" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,69,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.4" href="#gridSVG.pch21" x="114.75" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,176,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.5" href="#gridSVG.pch21" x="121.66" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,69,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.6" href="#gridSVG.pch21" x="122.79" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,84,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.7" href="#gridSVG.pch21" x="132.1" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(158,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.8" href="#gridSVG.pch21" x="136.71" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.9" href="#gridSVG.pch21" x="140.53" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,168,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.10" href="#gridSVG.pch21" x="142.44" y="205.21" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,92,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.11" href="#gridSVG.pch21" x="144.36" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,214,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.12" href="#gridSVG.pch21" x="151.36" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,99,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.13" href="#gridSVG.pch21" x="152.66" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,23,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.14" href="#gridSVG.pch21" x="154.31" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,237,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.15" href="#gridSVG.pch21" x="155.05" y="205.21" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,99,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.16" href="#gridSVG.pch21" x="181.79" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,199,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.17" href="#gridSVG.pch21" x="189.14" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,163,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.18" href="#gridSVG.pch21" x="214.7" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(158,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.19" href="#gridSVG.pch21" x="216.36" y="203.54" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,229,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.4.1.20" href="#gridSVG.pch21" x="250.35" y="201.87" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(20,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.4.1">
+                              <g id="inz-group-label.4.1.1" transform="translate(60.45, 241.65)" stroke-width="0.1">
+                                <g id="inz-group-label.4.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.4.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.4.1.1.tspan.1" dy="10" x="0">Middle East &amp; North Africa</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.12" font-size="12.67">
+        <g id="container::VP:TOPlayout.12">
+          <g id="container::VP:TOPlayout::GRID.VP.889.8">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.8">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.7" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.7">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.7.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.7" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.7.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.7.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.7" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.7.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907::GRID.VP.908.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907::GRID.VP.908::GRID.VP.909.1.clipPath">
+                              <rect x="57.32" y="129.71" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907::GRID.VP.908::GRID.VP.909.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907::GRID.VP.908::GRID.VP.909.1.clipPath)">
+                            <g id="inz-box.1.1.5.1">
+                              <polygon id="inz-box.1.1.5.1.1" points="129.39,132.53 129.39,140.99 137.81,140.99 137.81,132.53" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.5.1.2" points="137.81,132.53 137.81,140.99 159.34,140.99 159.34,132.53" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.5.1">
+                              <polyline id="inz-box-line.1.1.5.1.1" points="126.88,136.76 129.39,136.76" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.5.1.2" points="159.34,136.76 295.27,136.76" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.907::GRID.VP.908::VP:plotregion-5.1">
+                            <g id="inz-DOTPOINTS.1.1.5.1">
+                              <use id="inz-DOTPOINTS.1.1.5.1.1" href="#gridSVG.pch21" x="126.88" y="145.48" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,92,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.2" href="#gridSVG.pch21" x="129.23" y="147.15" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(20,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.3" href="#gridSVG.pch21" x="129.44" y="148.82" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,145,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.4" href="#gridSVG.pch21" x="134.84" y="145.48" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(36,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.5" href="#gridSVG.pch21" x="140.79" y="147.15" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,79)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.6" href="#gridSVG.pch21" x="151.92" y="145.48" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(51,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.7" href="#gridSVG.pch21" x="181.57" y="145.48" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,133,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.5.1.8" href="#gridSVG.pch21" x="295.27" y="145.48" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,102,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.5.1">
+                              <g id="inz-group-label.5.1.1" transform="translate(60.45, 185.26)" stroke-width="0.1">
+                                <g id="inz-group-label.5.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.5.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.5.1.1.tspan.1" dy="10" x="0">South Asia</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.13" font-size="12.67">
+        <g id="container::VP:TOPlayout.13">
+          <g id="container::VP:TOPlayout::GRID.VP.889.9">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.9">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.8" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.8">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.8.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.8" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.8.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.8.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.8" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.8.clipPath)">
+                      <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910.1">
+                        <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910::GRID.VP.911.1">
+                          <defs>
+                            <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910::GRID.VP.911::GRID.VP.912.1.clipPath">
+                              <rect x="57.32" y="73.32" width="312.68" height="14.1" fill="none" stroke="none"/>
+                            </clipPath>
+                          </defs>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910::GRID.VP.911::GRID.VP.912.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910::GRID.VP.911::GRID.VP.912.1.clipPath)">
+                            <g id="inz-box.1.1.6.1">
+                              <polygon id="inz-box.1.1.6.1.1" points="216.18,76.14 216.18,84.6 248.38,84.6 248.38,76.14" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                              <polygon id="inz-box.1.1.6.1.2" points="248.38,76.14 248.38,84.6 277.41,84.6 277.41,76.14" stroke-width="1.58" fill="rgb(229,229,229)" fill-opacity="1"/>
+                            </g>
+                            <g id="inz-box-line.1.1.6.1">
+                              <polyline id="inz-box-line.1.1.6.1.1" points="94.53,80.37 216.18,80.37" stroke-width="0.55" fill="none"/>
+                              <polyline id="inz-box-line.1.1.6.1.2" points="277.41,80.37 355.79,80.37" stroke-width="0.55" fill="none"/>
+                            </g>
+                          </g>
+                          <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels::GRID.VP.910::GRID.VP.911::VP:plotregion-6.1">
+                            <g id="inz-DOTPOINTS.1.1.6.1">
+                              <use id="inz-DOTPOINTS.1.1.6.1.1" href="#gridSVG.pch21" x="94.53" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,138,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.2" href="#gridSVG.pch21" x="125.18" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,122,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.3" href="#gridSVG.pch21" x="136.23" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,10)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.4" href="#gridSVG.pch21" x="150.23" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,26)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.5" href="#gridSVG.pch21" x="170.88" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,48,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.6" href="#gridSVG.pch21" x="172.14" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(105,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.7" href="#gridSVG.pch21" x="186.7" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,156,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.8" href="#gridSVG.pch21" x="193.4" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,179)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.9" href="#gridSVG.pch21" x="207.96" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,117)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.10" href="#gridSVG.pch21" x="210.23" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.11" href="#gridSVG.pch21" x="211.75" y="92.42" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,41)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.12" href="#gridSVG.pch21" x="217.66" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(20,255,0)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.13" href="#gridSVG.pch21" x="232.88" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,133)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.14" href="#gridSVG.pch21" x="234.22" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,125)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.15" href="#gridSVG.pch21" x="234.31" y="92.42" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,33)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.16" href="#gridSVG.pch21" x="234.96" y="94.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(204,204,204)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.17" href="#gridSVG.pch21" x="237.88" y="95.76" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,224,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.18" href="#gridSVG.pch21" x="239.49" y="97.43" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,33,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.19" href="#gridSVG.pch21" x="240.62" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,217,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.20" href="#gridSVG.pch21" x="245.49" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,240)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.21" href="#gridSVG.pch21" x="245.96" y="92.42" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,71)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.22" href="#gridSVG.pch21" x="247.92" y="94.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,79)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.23" href="#gridSVG.pch21" x="248.83" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,0,8)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.24" href="#gridSVG.pch21" x="250.53" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,201,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.25" href="#gridSVG.pch21" x="251.53" y="92.42" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,224,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.26" href="#gridSVG.pch21" x="251.66" y="94.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,156)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.27" href="#gridSVG.pch21" x="254.01" y="95.76" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(43,0,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.28" href="#gridSVG.pch21" x="255.14" y="97.43" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,232,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.29" href="#gridSVG.pch21" x="256.92" y="99.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,64,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.30" href="#gridSVG.pch21" x="258.18" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,140,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.31" href="#gridSVG.pch21" x="260.01" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,117,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.32" href="#gridSVG.pch21" x="266.57" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,110,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.33" href="#gridSVG.pch21" x="277.22" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,179)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.34" href="#gridSVG.pch21" x="277.96" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,102)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.35" href="#gridSVG.pch21" x="281.57" y="92.42" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,232,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.36" href="#gridSVG.pch21" x="287.48" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(20,0,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.37" href="#gridSVG.pch21" x="288.35" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,125,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.38" href="#gridSVG.pch21" x="301.44" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,255,156)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.39" href="#gridSVG.pch21" x="305.61" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(255,0,230)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.40" href="#gridSVG.pch21" x="307.66" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,125,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.41" href="#gridSVG.pch21" x="321.74" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(120,0,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.42" href="#gridSVG.pch21" x="322.27" y="90.75" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(20,0,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.43" href="#gridSVG.pch21" x="332.66" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(166,0,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                              <use id="inz-DOTPOINTS.1.1.6.1.44" href="#gridSVG.pch21" x="355.79" y="89.09" width="7.6" height="7.6" transform=" translate(-3.8,-3.8)" stroke="rgb(0,163,255)" stroke-width="2.08" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="6.33"/>
+                            </g>
+                            <g id="inz-group-label.6.1">
+                              <g id="inz-group-label.6.1.1" transform="translate(60.45, 128.87)" stroke-width="0.1">
+                                <g id="inz-group-label.6.1.1.scale" transform="scale(1, -1)">
+                                  <text x="0" y="0" id="inz-group-label.6.1.1.text" text-anchor="start" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                                    <tspan id="inz-group-label.6.1.1.tspan.1" dy="10" x="0">Sub-Saharan Africa</tspan>
+                                  </text>
+                                </g>
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.14" font-size="12.67">
+        <g id="container::VP:TOPlayout.14">
+          <g id="container::VP:TOPlayout::GRID.VP.889.10">
+            <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout.10">
+              <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890.9" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891.9">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.9.clipPath">
+                      <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.9" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points.9.clipPath)">
+                    <defs>
+                      <clipPath id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.9.clipPath">
+                        <rect x="57.32" y="73.32" width="312.68" height="338.36" fill="none" stroke="none"/>
+                      </clipPath>
+                    </defs>
+                    <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.9" clip-path="url(#container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::VP:locate.these.points::VP:dotplot-levels.9.clipPath)"/>
+                  </g>
+                  <g id="inz-rect-tp.1.1.1">
+                    <rect id="inz-rect-tp.1.1.1.1" x="57.32" y="73.32" width="312.68" height="338.36" transform="" fill="none" fill-opacity="0"/>
+                  </g>
+                  <g id="container::VP:TOPlayout::GRID.VP.889::VP:PLOTlayout::GRID.VP.890::GRID.VP.891::GRID.VP.913.1">
+                    <g id="inz-xaxis-bottom.1.1.1" font-size="10.13">
+                      <g id="major.1">
+                        <polyline id="major.1.1" points="69.36,73.32 330.22,73.32" fill="none"/>
+                      </g>
+                      <g id="ticks.1">
+                        <polyline id="ticks.1.1" points="69.36,73.32 69.36,64.2" fill="none"/>
+                        <polyline id="ticks.1.2" points="112.84,73.32 112.84,64.2" fill="none"/>
+                        <polyline id="ticks.1.3" points="156.31,73.32 156.31,64.2" fill="none"/>
+                        <polyline id="ticks.1.4" points="199.79,73.32 199.79,64.2" fill="none"/>
+                        <polyline id="ticks.1.5" points="243.27,73.32 243.27,64.2" fill="none"/>
+                        <polyline id="ticks.1.6" points="286.75,73.32 286.75,64.2" fill="none"/>
+                        <polyline id="ticks.1.7" points="330.22,73.32 330.22,64.2" fill="none"/>
+                      </g>
+                      <g id="labels.1">
+                        <g id="labels.1.1" transform="translate(69.36, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.1.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.1.tspan.1" dy="6" x="0">1</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.2" transform="translate(112.84, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.2.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.2.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.2.tspan.1" dy="6" x="0">2</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.3" transform="translate(156.31, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.3.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.3.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.3.tspan.1" dy="6" x="0">3</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.4" transform="translate(199.79, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.4.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.4.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.4.tspan.1" dy="6" x="0">4</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.5" transform="translate(243.27, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.5.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.5.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.5.tspan.1" dy="6" x="0">5</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.6" transform="translate(286.75, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.6.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.6.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.6.tspan.1" dy="6" x="0">6</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.7" transform="translate(330.22, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.7.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.7.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.7.tspan.1" dy="6" x="0">7</tspan>
+                            </text>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg> 
+      </div>
+      <div class = "tbl-div table-responsive">
+<table id="table" class="table table-condensed table-hover" cellspacing="0">
+<caption>Data</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:center;"> ChildrenPerWoman </th>
+   <th style="text-align:center;"> Region </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:center;"> 1.498 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 2 </td>
+   <td style="text-align:center;"> 1.6808 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 3 </td>
+   <td style="text-align:center;"> 1.692 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 4 </td>
+   <td style="text-align:center;"> 1.726 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 5 </td>
+   <td style="text-align:center;"> 1.796 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 6 </td>
+   <td style="text-align:center;"> 1.831 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 7 </td>
+   <td style="text-align:center;"> 1.888 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 8 </td>
+   <td style="text-align:center;"> 1.889 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 9 </td>
+   <td style="text-align:center;"> 1.897 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 10 </td>
+   <td style="text-align:center;"> 1.906 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 11 </td>
+   <td style="text-align:center;"> 1.909 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 12 </td>
+   <td style="text-align:center;"> 1.97 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 13 </td>
+   <td style="text-align:center;"> 2.013 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 14 </td>
+   <td style="text-align:center;"> 2.074 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 15 </td>
+   <td style="text-align:center;"> 2.107 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 16 </td>
+   <td style="text-align:center;"> 2.112 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 17 </td>
+   <td style="text-align:center;"> 2.132 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 18 </td>
+   <td style="text-align:center;"> 2.164 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 19 </td>
+   <td style="text-align:center;"> 2.241 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 20 </td>
+   <td style="text-align:center;"> 2.247 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 21 </td>
+   <td style="text-align:center;"> 2.282 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 22 </td>
+   <td style="text-align:center;"> 2.319 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 23 </td>
+   <td style="text-align:center;"> 2.346 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 24 </td>
+   <td style="text-align:center;"> 2.387 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 25 </td>
+   <td style="text-align:center;"> 2.406 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 26 </td>
+   <td style="text-align:center;"> 2.43 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 27 </td>
+   <td style="text-align:center;"> 2.531 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 28 </td>
+   <td style="text-align:center;"> 2.579 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 29 </td>
+   <td style="text-align:center;"> 2.608 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 30 </td>
+   <td style="text-align:center;"> 2.652 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 31 </td>
+   <td style="text-align:center;"> 2.717 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 32 </td>
+   <td style="text-align:center;"> 2.728 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 33 </td>
+   <td style="text-align:center;"> 2.743 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 34 </td>
+   <td style="text-align:center;"> 2.907 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 35 </td>
+   <td style="text-align:center;"> 3.063 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 36 </td>
+   <td style="text-align:center;"> 3.257 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 37 </td>
+   <td style="text-align:center;"> 3.273 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 38 </td>
+   <td style="text-align:center;"> 3.477 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 39 </td>
+   <td style="text-align:center;"> 3.5 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 40 </td>
+   <td style="text-align:center;"> 4.119 </td>
+   <td style="text-align:center;"> America </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 41 </td>
+   <td style="text-align:center;"> 1.05 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 42 </td>
+   <td style="text-align:center;"> 1.28 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 43 </td>
+   <td style="text-align:center;"> 1.343 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 44 </td>
+   <td style="text-align:center;"> 1.477 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 45 </td>
+   <td style="text-align:center;"> 1.63 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 46 </td>
+   <td style="text-align:center;"> 1.862 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 47 </td>
+   <td style="text-align:center;"> 1.956 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 48 </td>
+   <td style="text-align:center;"> 2.049 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 49 </td>
+   <td style="text-align:center;"> 2.052 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:center;"> 2.095 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 51 </td>
+   <td style="text-align:center;"> 2.123 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 52 </td>
+   <td style="text-align:center;"> 2.156 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 53 </td>
+   <td style="text-align:center;"> 2.221 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 54 </td>
+   <td style="text-align:center;"> 2.368 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 55 </td>
+   <td style="text-align:center;"> 2.479 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 56 </td>
+   <td style="text-align:center;"> 2.529 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 57 </td>
+   <td style="text-align:center;"> 2.736 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 58 </td>
+   <td style="text-align:center;"> 3.051 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 59 </td>
+   <td style="text-align:center;"> 3.133 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 60 </td>
+   <td style="text-align:center;"> 3.257 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 61 </td>
+   <td style="text-align:center;"> 3.608 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 62 </td>
+   <td style="text-align:center;"> 4.012 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 63 </td>
+   <td style="text-align:center;"> 4.067 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 64 </td>
+   <td style="text-align:center;"> 4.359 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 65 </td>
+   <td style="text-align:center;"> 4.426 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 66 </td>
+   <td style="text-align:center;"> 6.479 </td>
+   <td style="text-align:center;"> East Asia &amp; Pacific </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 67 </td>
+   <td style="text-align:center;"> 1.218 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 68 </td>
+   <td style="text-align:center;"> 1.309 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 69 </td>
+   <td style="text-align:center;"> 1.333 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 70 </td>
+   <td style="text-align:center;"> 1.334 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 71 </td>
+   <td style="text-align:center;"> 1.34 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 72 </td>
+   <td style="text-align:center;"> 1.358 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 73 </td>
+   <td style="text-align:center;"> 1.368 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 74 </td>
+   <td style="text-align:center;"> 1.377 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 75 </td>
+   <td style="text-align:center;"> 1.384 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 76 </td>
+   <td style="text-align:center;"> 1.392 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 77 </td>
+   <td style="text-align:center;"> 1.4 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 78 </td>
+   <td style="text-align:center;"> 1.406 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 79 </td>
+   <td style="text-align:center;"> 1.411 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 80 </td>
+   <td style="text-align:center;"> 1.416 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 81 </td>
+   <td style="text-align:center;"> 1.417 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 82 </td>
+   <td style="text-align:center;"> 1.419 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 83 </td>
+   <td style="text-align:center;"> 1.424 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 84 </td>
+   <td style="text-align:center;"> 1.432 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 85 </td>
+   <td style="text-align:center;"> 1.433 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 86 </td>
+   <td style="text-align:center;"> 1.434 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 87 </td>
+   <td style="text-align:center;"> 1.434 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 88 </td>
+   <td style="text-align:center;"> 1.446 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 89 </td>
+   <td style="text-align:center;"> 1.459 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 90 </td>
+   <td style="text-align:center;"> 1.472 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 91 </td>
+   <td style="text-align:center;"> 1.493 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 92 </td>
+   <td style="text-align:center;"> 1.501 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 93 </td>
+   <td style="text-align:center;"> 1.619 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 94 </td>
+   <td style="text-align:center;"> 1.626 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 95 </td>
+   <td style="text-align:center;"> 1.722 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 96 </td>
+   <td style="text-align:center;"> 1.761 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 97 </td>
+   <td style="text-align:center;"> 1.773 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 98 </td>
+   <td style="text-align:center;"> 1.788 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 99 </td>
+   <td style="text-align:center;"> 1.819 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 100 </td>
+   <td style="text-align:center;"> 1.85 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 101 </td>
+   <td style="text-align:center;"> 1.871 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 102 </td>
+   <td style="text-align:center;"> 1.8923 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 103 </td>
+   <td style="text-align:center;"> 1.917 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 104 </td>
+   <td style="text-align:center;"> 1.96 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 105 </td>
+   <td style="text-align:center;"> 1.973 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 106 </td>
+   <td style="text-align:center;"> 1.986 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 107 </td>
+   <td style="text-align:center;"> 2.002 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 108 </td>
+   <td style="text-align:center;"> 2.118 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 109 </td>
+   <td style="text-align:center;"> 2.147 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 110 </td>
+   <td style="text-align:center;"> 2.457 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 111 </td>
+   <td style="text-align:center;"> 2.482 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 112 </td>
+   <td style="text-align:center;"> 2.51 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 113 </td>
+   <td style="text-align:center;"> 2.815 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 114 </td>
+   <td style="text-align:center;"> 3.703 </td>
+   <td style="text-align:center;"> Europe &amp; Central Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 115 </td>
+   <td style="text-align:center;"> 1.57 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 116 </td>
+   <td style="text-align:center;"> 1.88 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 117 </td>
+   <td style="text-align:center;"> 1.948 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 118 </td>
+   <td style="text-align:center;"> 2.044 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 119 </td>
+   <td style="text-align:center;"> 2.203 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 120 </td>
+   <td style="text-align:center;"> 2.229 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 121 </td>
+   <td style="text-align:center;"> 2.443 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 122 </td>
+   <td style="text-align:center;"> 2.549 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 123 </td>
+   <td style="text-align:center;"> 2.637 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 124 </td>
+   <td style="text-align:center;"> 2.681 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 125 </td>
+   <td style="text-align:center;"> 2.725 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 126 </td>
+   <td style="text-align:center;"> 2.886 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 127 </td>
+   <td style="text-align:center;"> 2.916 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 128 </td>
+   <td style="text-align:center;"> 2.954 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 129 </td>
+   <td style="text-align:center;"> 2.971 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 130 </td>
+   <td style="text-align:center;"> 3.586 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 131 </td>
+   <td style="text-align:center;"> 3.755 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 132 </td>
+   <td style="text-align:center;"> 4.343 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 133 </td>
+   <td style="text-align:center;"> 4.381 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 134 </td>
+   <td style="text-align:center;"> 5.163 </td>
+   <td style="text-align:center;"> Middle East &amp; North Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 135 </td>
+   <td style="text-align:center;"> 2.323 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 136 </td>
+   <td style="text-align:center;"> 2.377 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 137 </td>
+   <td style="text-align:center;"> 2.382 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 138 </td>
+   <td style="text-align:center;"> 2.506 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 139 </td>
+   <td style="text-align:center;"> 2.643 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 140 </td>
+   <td style="text-align:center;"> 2.899 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 141 </td>
+   <td style="text-align:center;"> 3.581 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 142 </td>
+   <td style="text-align:center;"> 6.196 </td>
+   <td style="text-align:center;"> South Asia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 143 </td>
+   <td style="text-align:center;"> 1.579 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 144 </td>
+   <td style="text-align:center;"> 2.284 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 145 </td>
+   <td style="text-align:center;"> 2.538 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 146 </td>
+   <td style="text-align:center;"> 2.86 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 147 </td>
+   <td style="text-align:center;"> 3.335 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 148 </td>
+   <td style="text-align:center;"> 3.364 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 149 </td>
+   <td style="text-align:center;"> 3.699 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 150 </td>
+   <td style="text-align:center;"> 3.853 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 151 </td>
+   <td style="text-align:center;"> 4.188 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 152 </td>
+   <td style="text-align:center;"> 4.24 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 153 </td>
+   <td style="text-align:center;"> 4.275 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 154 </td>
+   <td style="text-align:center;"> 4.411 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 155 </td>
+   <td style="text-align:center;"> 4.761 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 156 </td>
+   <td style="text-align:center;"> 4.792 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 157 </td>
+   <td style="text-align:center;"> 4.794 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 158 </td>
+   <td style="text-align:center;"> 4.809 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 159 </td>
+   <td style="text-align:center;"> 4.876 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 160 </td>
+   <td style="text-align:center;"> 4.913 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 161 </td>
+   <td style="text-align:center;"> 4.939 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 162 </td>
+   <td style="text-align:center;"> 5.051 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 163 </td>
+   <td style="text-align:center;"> 5.062 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 164 </td>
+   <td style="text-align:center;"> 5.107 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 165 </td>
+   <td style="text-align:center;"> 5.128 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 166 </td>
+   <td style="text-align:center;"> 5.167 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 167 </td>
+   <td style="text-align:center;"> 5.19 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 168 </td>
+   <td style="text-align:center;"> 5.193 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 169 </td>
+   <td style="text-align:center;"> 5.247 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 170 </td>
+   <td style="text-align:center;"> 5.273 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 171 </td>
+   <td style="text-align:center;"> 5.314 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 172 </td>
+   <td style="text-align:center;"> 5.343 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 173 </td>
+   <td style="text-align:center;"> 5.385 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 174 </td>
+   <td style="text-align:center;"> 5.536 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 175 </td>
+   <td style="text-align:center;"> 5.781 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 176 </td>
+   <td style="text-align:center;"> 5.798 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 177 </td>
+   <td style="text-align:center;"> 5.881 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 178 </td>
+   <td style="text-align:center;"> 6.017 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 179 </td>
+   <td style="text-align:center;"> 6.037 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 180 </td>
+   <td style="text-align:center;"> 6.338 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 181 </td>
+   <td style="text-align:center;"> 6.434 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 182 </td>
+   <td style="text-align:center;"> 6.481 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 183 </td>
+   <td style="text-align:center;"> 6.805 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 184 </td>
+   <td style="text-align:center;"> 6.817 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 185 </td>
+   <td style="text-align:center;"> 7.056 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 186 </td>
+   <td style="text-align:center;"> 7.588 </td>
+   <td style="text-align:center;"> Sub-Saharan Africa </td>
+  </tr>
+</tbody>
+</table>
+      </div>
+    </div>
+
+    <!-- help guide -->
+    <div class = "help-overlay">
+      <div class= "help-info">
+        <h4> <span class = "glyphicon glyphicon-question-sign title"> </span> Help </h4>
+        <span class = "glyphicon glyphicon-stats"> </span><strong> Plot </strong> show/hide plot <br />
+        <span class = "glyphicon glyphicon-list-alt"> </span><strong> Table </strong> show/hide table <br/>
+        <span class = "glyphicon glyphicon-refresh"> </span><strong> Reset </strong> clear all selections/return <br />
+        <strong>Variable to display</strong> select variable/s to display in plot <br/>
+        <br/>
+        <h5>PLOT SELECTION</h5>
+        <strong> Click </strong> for a single selection <br />
+        Hold <strong>Shift + Click</strong> for multiple selections  <br/>
+        (disabled for bar charts) <br/>
+        <strong>Drag + hold</strong> to draw a selection box <br/>
+        <br/>
+        <h5> TABLE SELECTION </h5> (disabled for bar charts) <br/>
+        <strong> Click </strong> on a row for a single selection <br />
+        Click again on the same row to deselect it <br />
+        <br/>
+        <h5>ADDITIONAL FEATURES FOR MAPS</h5>
+        <strong>Slider:</strong> Drag to view a certain time period <br />
+        <strong>Pan and Zoom:</strong> Drag/scroll mouse <br />
+        <hr />
+        Found a bug or got suggestions? Contact us!  <br/>
+        <a href="https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/">
+          <img alt = "inzight-logo" class="logo" src = "https://www.stat.auckland.ac.nz/~wild/iNZight/img/inzight_transp.png" />
+        </a>
+      </div>
+    </div>
+<script type='text/javascript'> var chart = {"type":["dot"],"data":[{"ChildrenPerWoman":"1.498","Region":"America"},{"ChildrenPerWoman":"1.6808","Region":"America"},{"ChildrenPerWoman":"1.692","Region":"America"},{"ChildrenPerWoman":"1.726","Region":"America"},{"ChildrenPerWoman":"1.796","Region":"America"},{"ChildrenPerWoman":"1.831","Region":"America"},{"ChildrenPerWoman":"1.888","Region":"America"},{"ChildrenPerWoman":"1.889","Region":"America"},{"ChildrenPerWoman":"1.897","Region":"America"},{"ChildrenPerWoman":"1.906","Region":"America"},{"ChildrenPerWoman":"1.909","Region":"America"},{"ChildrenPerWoman":"1.97","Region":"America"},{"ChildrenPerWoman":"2.013","Region":"America"},{"ChildrenPerWoman":"2.074","Region":"America"},{"ChildrenPerWoman":"2.107","Region":"America"},{"ChildrenPerWoman":"2.112","Region":"America"},{"ChildrenPerWoman":"2.132","Region":"America"},{"ChildrenPerWoman":"2.164","Region":"America"},{"ChildrenPerWoman":"2.241","Region":"America"},{"ChildrenPerWoman":"2.247","Region":"America"},{"ChildrenPerWoman":"2.282","Region":"America"},{"ChildrenPerWoman":"2.319","Region":"America"},{"ChildrenPerWoman":"2.346","Region":"America"},{"ChildrenPerWoman":"2.387","Region":"America"},{"ChildrenPerWoman":"2.406","Region":"America"},{"ChildrenPerWoman":"2.43","Region":"America"},{"ChildrenPerWoman":"2.531","Region":"America"},{"ChildrenPerWoman":"2.579","Region":"America"},{"ChildrenPerWoman":"2.608","Region":"America"},{"ChildrenPerWoman":"2.652","Region":"America"},{"ChildrenPerWoman":"2.717","Region":"America"},{"ChildrenPerWoman":"2.728","Region":"America"},{"ChildrenPerWoman":"2.743","Region":"America"},{"ChildrenPerWoman":"2.907","Region":"America"},{"ChildrenPerWoman":"3.063","Region":"America"},{"ChildrenPerWoman":"3.257","Region":"America"},{"ChildrenPerWoman":"3.273","Region":"America"},{"ChildrenPerWoman":"3.477","Region":"America"},{"ChildrenPerWoman":"3.5","Region":"America"},{"ChildrenPerWoman":"4.119","Region":"America"},{"ChildrenPerWoman":"1.05","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.28","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.343","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.477","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.63","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.862","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.956","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.049","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.052","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.095","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.123","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.156","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.221","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.368","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.479","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.529","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"2.736","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"3.051","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"3.133","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"3.257","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"3.608","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"4.012","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"4.067","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"4.359","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"4.426","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"6.479","Region":"East Asia & Pacific"},{"ChildrenPerWoman":"1.218","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.309","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.333","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.334","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.34","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.358","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.368","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.377","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.384","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.392","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.4","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.406","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.411","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.416","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.417","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.419","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.424","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.432","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.433","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.434","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.434","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.446","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.459","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.472","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.493","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.501","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.619","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.626","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.722","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.761","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.773","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.788","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.819","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.85","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.871","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.8923","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.917","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.96","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.973","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.986","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.002","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.118","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.147","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.457","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.482","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.51","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"2.815","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"3.703","Region":"Europe & Central Asia"},{"ChildrenPerWoman":"1.57","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"1.88","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"1.948","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.044","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.203","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.229","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.443","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.549","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.637","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.681","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.725","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.886","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.916","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.954","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.971","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"3.586","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"3.755","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"4.343","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"4.381","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"5.163","Region":"Middle East & North Africa"},{"ChildrenPerWoman":"2.323","Region":"South Asia"},{"ChildrenPerWoman":"2.377","Region":"South Asia"},{"ChildrenPerWoman":"2.382","Region":"South Asia"},{"ChildrenPerWoman":"2.506","Region":"South Asia"},{"ChildrenPerWoman":"2.643","Region":"South Asia"},{"ChildrenPerWoman":"2.899","Region":"South Asia"},{"ChildrenPerWoman":"3.581","Region":"South Asia"},{"ChildrenPerWoman":"6.196","Region":"South Asia"},{"ChildrenPerWoman":"1.579","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"2.284","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"2.538","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"2.86","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"3.335","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"3.364","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"3.699","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"3.853","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.188","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.24","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.275","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.411","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.761","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.792","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.794","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.809","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.876","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.913","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"4.939","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.051","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.062","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.107","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.128","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.167","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.19","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.193","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.247","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.273","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.314","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.343","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.385","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.536","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.781","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.798","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"5.881","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.017","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.037","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.338","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.434","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.481","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.805","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"6.817","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"7.056","Region":"Sub-Saharan Africa"},{"ChildrenPerWoman":"7.588","Region":"Sub-Saharan Africa"}],"boxData":[[{"quantiles":1.9082,"_row":"25%"},{"quantiles":2.2645,"_row":"50%"},{"quantiles":2.6682,"_row":"75%"},{"quantiles":1.498,"_row":"min"},{"quantiles":4.119,"_row":"max"}],[{"quantiles":1.9792,"_row":"25%"},{"quantiles":2.2945,"_row":"50%"},{"quantiles":3.226,"_row":"75%"},{"quantiles":1.05,"_row":"min"},{"quantiles":6.479,"_row":"max"}],[{"quantiles":1.4098,"_row":"25%"},{"quantiles":1.4825,"_row":"50%"},{"quantiles":1.8985,"_row":"75%"},{"quantiles":1.218,"_row":"min"},{"quantiles":3.703,"_row":"max"}],[{"quantiles":2.2225,"_row":"25%"},{"quantiles":2.703,"_row":"50%"},{"quantiles":3.1248,"_row":"75%"},{"quantiles":1.57,"_row":"min"},{"quantiles":5.163,"_row":"max"}],[{"quantiles":2.3807,"_row":"25%"},{"quantiles":2.5745,"_row":"50%"},{"quantiles":3.0695,"_row":"75%"},{"quantiles":2.323,"_row":"min"},{"quantiles":6.196,"_row":"max"}],[{"quantiles":4.377,"_row":"25%"},{"quantiles":5.1175,"_row":"50%"},{"quantiles":5.7852,"_row":"75%"},{"quantiles":1.579,"_row":"min"},{"quantiles":7.588,"_row":"max"}]],"levList":[[1.498,1.6808,1.692,1.726,1.796,1.831,1.888,1.889,1.897,1.906,1.909,1.97,2.013,2.074,2.107,2.112,2.132,2.164,2.241,2.247,2.282,2.319,2.346,2.387,2.406,2.43,2.531,2.579,2.608,2.652,2.717,2.728,2.743,2.907,3.063,3.257,3.273,3.477,3.5,4.119],[1.05,1.28,1.343,1.477,1.63,1.862,1.956,2.049,2.052,2.095,2.123,2.156,2.221,2.368,2.479,2.529,2.736,3.051,3.133,3.257,3.608,4.012,4.067,4.359,4.426,6.479],[1.218,1.309,1.333,1.334,1.34,1.358,1.368,1.377,1.384,1.392,1.4,1.406,1.411,1.416,1.417,1.419,1.424,1.432,1.433,1.434,1.434,1.446,1.459,1.472,1.493,1.501,1.619,1.626,1.722,1.761,1.773,1.788,1.819,1.85,1.871,1.8923,1.917,1.96,1.973,1.986,2.002,2.118,2.147,2.457,2.482,2.51,2.815,3.703],[1.57,1.88,1.948,2.044,2.203,2.229,2.443,2.549,2.637,2.681,2.725,2.886,2.916,2.954,2.971,3.586,3.755,4.343,4.381,5.163],[2.323,2.377,2.382,2.506,2.643,2.899,3.581,6.196],[1.579,2.284,2.538,2.86,3.335,3.364,3.699,3.853,4.188,4.24,4.275,4.411,4.761,4.792,4.794,4.809,4.876,4.913,4.939,5.051,5.062,5.107,5.128,5.167,5.19,5.193,5.247,5.273,5.314,5.343,5.385,5.536,5.781,5.798,5.881,6.017,6.037,6.338,6.434,6.481,6.805,6.817,7.056,7.588]],"countsTab":[0,40,66,114,134,142,186],"levNames":["America","East Asia & Pacific","Europe & Central Asia","Middle East & North Africa","South Asia","Sub-Saharan Africa"],"varNames":["ChildrenPerWoman","Region"],"meanData":[]};
+/** Interactivity for iNZightPlots
+ * For each plot there's a sub-class which extends with this class `inzplot`.
+ * This class applies for all single panel plots generated with the iNZightPlots
+ * package in R.
+ * Functions that apply for this class apply for all subclasses.
+ * Hierarchy of plots: inzplot -> {hexbin, histogram, dotscatter, bar}
+ *                     inzmap -> {region, centroid, sparklines}
+ * Additional classes/components: boxplot, legend, table, sparkplot
+ * @param {Object} chart - chart.json from R (which includes all data, and
+ * other params for identifying the chart originally drawn in R)
+ * The relevant plot class is called in the onload function (scroll to the bottom of
+ * this script, or search for 'ON LOAD FUNCTION').
+ * NOTE: If it so happens that iNZightPlots gets rewritten/gridSVG no longer gets used,
+ * it's best to rewrite everything.
+ * Naming of grid objects is very important especially when exporting with gridSVG
+ * for targeting certain elements and groups of elements. */
+class Inzplot {
+
+  constructor(chart) {
+    // set svg so that there's variable width and height based on div
+    this.svg = d3.select("svg")
+                 .attr("width", null)
+                 .attr("height", null);
+    this.chart = chart;
+    this.chartType = chart.type[0];
+    this.data = chart.data;
+    this.count = this.data.length;
+    this.Grob = this.getGrob(this.chartType);
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    this.panel = document.getElementById(this.Grob);
+  }
+
+  // create a tooltip for the plot
+  setTooltip(width, height = null) {
+    var tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .attr("id", "tooltip")
+                    .style("width", width)
+                    .style("height", height);
+    this.tooltip = tooltip;
+    return tooltip;
+  }
+
+  /** Identifying the 'Grob' in the chart
+   * (where do all our bars/dots/hexagons lie?)
+   * @param {String} chartType - the type of chart identified
+   * @return Grob identifier */
+  getGrob(chartType) {
+    var polygon = document.getElementsByTagName('polygon'),
+        p, Grob;
+    switch(chartType) {
+      case "hist":
+      p = polygon[2];
+      break;
+
+      case "bar":
+      p = polygon[polygon.length - 1];
+      break;
+
+      case "dot":
+      Grob = 'g[id^="inz-DOTPOINTS."]';
+      break;
+
+      case "scatter":
+      // test if there's a raster map (originally GRID.rastergrob)
+      // OR: you could change the grid name in iNZightMaps package to inz-SCATTERPOINTS...
+       Grob = (document.querySelectorAll('g[id^="background.map"]').length > 0) ?
+              'g[id^="SCATTERPOINTS."]' : 'g[id^="inz-SCATTERPOINTS."]';
+      break;
+
+      default:
+      // for hexbins, bp-stacked
+      p = polygon[0];
+      break;
+    }
+
+    if (p) {
+      var id = p.getAttribute('id');
+      Grob = id.substring(0, id.lastIndexOf('.'));
+    }
+
+    return Grob;
+  }
+
+  // Functions for enabling brushing over elements (selection box)
+  // `brushmove` differs for each plot (depending on what is being
+  // accumulated) - see respective subclasses to change this
+
+  /** Enable brushing on plot
+   * @param node - an element to target and add brush to
+   * @param {Number} selector - where exactly do you want to insert brush
+   * @param {Boolean} text - if an additional paragraph should be added
+   * This is generally true for histograms/hexbins to show accumulated data when
+   * brushing, otherwise false. */
+  enableBrush(node, selector, direction = "xy", text = false) {
+    if (text) {
+      d3.select('#control').append("p")
+                   .attr('class', 'brush-info');
+    }
+
+    // append brush:
+    var svg = d3.select('svg');
+    var brush = (direction === "x") ? d3.brushX() : d3.brush();
+
+    brush.on("start", this.brushstart)
+         .on("brush", this.brushmove)
+         .on("end", this.brushend);
+
+    d3.select(node)
+      .insert("g", "g:nth-child(" + selector + ")")
+      .attr("class", "brush")
+      .call(brush);
+
+    // make handles invisible:
+    d3.selectAll('.handle')
+      .style('opacity', 0);
+    d3.select('.overlay')
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .style('stroke', 'none');
+  }
+
+  brushend() {
+    if (!d3.event.selection) {
+      d3.select(".selection")
+        .style("display", "none");
+    }
+  }
+
+  // When user begins brushing
+  brushstart() {
+    d3.select(".selection")
+      .style("display", null);
+  }
+
+}
+
+/** TABLE CLASS
+ * Includes setup with the DataTables library
+ * Any additional functions related to the table can be added here */
+class Table {
+
+  constructor(chartType) {
+    this.chartType = chartType;
+  }
+
+  /** Initializing table using DataTables
+   * To apply styles and formats onto table from the DataTables library
+   * @param {string} chartType - type of chart shown
+   * For bar plots, rows and columns ordering should be disabled (to link
+   * cells properly to bars + additional rows added)
+   * For all other plots, there's an ID column added where each row represents
+   * an element (a bar, a point, a region, a hexagon, e.t.c). */
+  setDT(chartType) {
+    var table;
+
+    if (chartType === "bar" || chartType === "bp-stacked") {
+      table = $('#table').DataTable({
+          "colReorder": true,
+          //disable ordering and sorting
+          "ordering": false,
+          "aaSorting": []
+      });
+    } else {
+      table = $('#table').DataTable({
+          "colReorder": true,
+          "columnDefs": [
+            { //hide rowID column
+              "targets": [0],
+              "visible": false
+            }
+          ]
+        });
+    }
+    this.DT = table;
+  }
+
+  // This is used to drive the table button
+  // For bar plots, it will hide percent/count conversion buttons
+  showTable() {
+    $('#table_wrapper').toggleClass('hidden');
+    $('.Percentage').toggleClass('hidden');
+    $('.Count').toggleClass('hidden');
+  }
+
+  // Table to plot linking:
+  tableToPlot(table, panel, element) {
+    $('#table tbody').on('click', 'tr', function() {
+      $(this).toggleClass('active');
+          let ind = table.rows('.active')[0];
+          let selector = "." + element;
+          d3.select(panel).selectAll(selector)
+            .attr("class", function(d, i) {
+                return (ind.includes(i) ? element + " selected" : element + " none");
+        });
+      //clear brush
+      d3.selectAll('.selection')
+        .style("display", "none");
+    });
+  }
+
+  // This is used to widen columns when there are more than 3
+  // columns in the table
+  widenColumns() {
+    // make tables not go wide when there's only 1 column
+    if (chart.type !== "bar") {
+      var ncol = $("#table thead tr th").length;
+      if (ncol < 3) {
+        $('#table').css('width', '50%');
+      } else if (ncol <= 4) {
+        $('#table').css('width', '75%');
+      } else {
+        $('#table').css('width', '100%');
+      }
+    } else {
+      $('#table').css('width', '100%');
+    }
+  }
+
+  // initialize table
+  init() {
+    this.setDT(this.chartType);
+    this.widenColumns();
+    // attach event handlers:
+    d3.select("#viewTable")
+      .on("click", this.showTable);
+  }
+
+}
+
+
+/** BOX PLOT CLASS
+ * For setting up interactivity and labels for box plots
+ * In cases where there are box plots present on the plot
+ * (specifically for dot plots and histograms), this will attach interactivity
+ * and label parts of the box plot when the user hovers/clicks on the box plot
+ * @param {Object} chart - chart information from R
+ * (ie factor levels, generally defaults to 1) */
+class Boxplot {
+
+  constructor(chart) {
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    this.boxData = chart.boxData;
+    this.polygonBox = document.querySelectorAll('g[id^="inz-box."]');
+    this.boxLines = document.querySelectorAll('g[id^="inz-box-line."]');
+  }
+
+  /** Main function to process and add labels, along with interactions for the
+   * box plot
+   * @param {Number} levelNo - number of levels/factors in the plot
+   */
+  boxMe(levelNo) {
+    var polygonBoxes = this.polygonBox;
+    var boxLines = this.boxLines;
+
+    for (let i = 1; i <= levelNo; i++) { //separate boxes for each plot
+      var polygonBox = polygonBoxes[i-1].children;
+      var boxLine = boxLines[i-1].children;
+      for (let j = 0; j < 2; j++) {
+        polygonBox[j].setAttribute('class', 'box-' + i);
+        boxLine[j].setAttribute('class', 'box-' + i);
+      }
+      this.boxLabelSet(i, 0, 1, 0,'LQ');
+      this.boxLabelSet(i, 1, 2, 2, 'UQ');
+      this.boxLabelSet(i, 1, 0, 1, 'Median');
+      this.boxLabelSet(i, 1, 0, 3, 'Min');
+      this.boxLabelSet(i, 2, 1, 4, 'Max');
+    }
+
+    //Box Plot interactions:
+    for (let j = 1; j <= levelNo; j++) {
+    var box = document.getElementsByClassName('box-' + j);
+    for (let i = 0; i < box.length; i++) {
+      box[i].setAttribute('onmouseover', 'fillBox(' + j + ')');
+      box[i].setAttribute('onmouseout', 'normalBox(' + j + ')');
+      box[i].setAttribute('onclick', 'showBox(' + j + ')');
+      }
+    }
+
+  }
+
+  /** Create box labels (min, max, mean, lower quartile, upper quartile)
+   * This is used to append text onto the SVG
+   * @param {Number} i - designated number that indicates what label it is
+   * @param {String} textinput - the label
+   * @param panel - where to append these svg labels to (generally this.panel
+   * is already identified)
+   * @param {Number} x - x-coordinate of where label is positioned
+   * @param {Number} y - y-coordinate of where label is positioned
+   * @return Appends labels onto SVG in correct positions
+   */
+  boxLabel(i, textinput, panel, x, y) {
+  var boxLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    boxLabel.setAttribute('class', 'label boxData-' + i + ' hidden');
+    boxLabel.setAttributeNS(null, 'transform', 'translate(' + Number(x) + ',' + (Number(y) + 2) + ') scale(1, -1)');
+    boxLabel.setAttributeNS(null, 'id', textinput);
+
+    var textNode = document.createTextNode(textinput);
+    boxLabel.appendChild(textNode);
+    panel.appendChild(boxLabel);
+  }
+
+  /** Sets all labels relative to the box plot and its information
+   * This function sets all the labels for the box plot at once.
+   * @param {Number} i
+   * @param {Number} p
+   * @param {Number} r
+   * @param {Number} q
+   * @param {String} textinput - Label (either: Min, Max, Median, LQ, UQ)
+   */
+  boxLabelSet(i, p, r, q, textinput) {
+
+    if (textinput == "Min" ||  textinput == "Max") {
+      var line = document.getElementById('inz-box-line.1.1.' + i  + '.1.' + p); //i is levelNo.
+      // p will either be 1 or 2 -> 1 = minLine, 2 = maxLine
+      line.setAttribute('class', 'box-' + i);
+      var boxPoints = line.getAttribute('points').split(" ")[r].split(",");
+      var panel = line.parentNode;
+    } else {
+      var box = document.getElementsByClassName('box-' + i)[p];
+      // boxplot split into two boxes - lowerbox (p = 0) and upperbox (p = 1)
+      var boxPoints = box.getAttribute('points').split(" ")[r].split(",");
+      var panel = box.parentNode;
+    }
+
+    var x = boxPoints[0], y = boxPoints[1], text;
+
+    if (textinput == "Median") {
+      // move median label below the box plot
+     y = boxPoints[1] - 11;
+    }
+    if (this.levelNo === 1) {
+      text = textinput + ": " + this.boxData[q].quantiles;
+    } else {
+      text = textinput + ": " + this.boxData[i-1][q].quantiles;
+    }
+    // this is associated with the boxData imported from R.
+    //q = 0 (LQ), 1 (UQ), 2 (Median), 3 (Min), 4 (Max)
+    this.boxLabel(i, text, panel, x, y);
+  }
+
+  init() {
+    this.boxMe(this.levelNo);
+  }
+
+}
+
+// functions for box plot event handling:
+fillBox = function(j) {
+  d3.selectAll('.box-' + j)
+    .classed('fillBox', true);
+};
+
+normalBox = function(j) {
+  d3.selectAll('.box-' + j)
+    .classed('fillBox', false);
+  };
+
+showBox = function(j) {
+  var boxData = d3.selectAll('.boxData-' + j);
+    boxData.classed('hidden', !boxData.classed('hidden'));
+}
+
+class MeanIndicator {
+  constructor(props) {
+    console.log(props);
+    this.mean = props.meanData;
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    // this.boxData = chart.boxData;
+    this.meanPoint = document.querySelectorAll('g[id^="inz-mean."]');
+  }
+  
+  init() {
+    for (let i = 1; i <= this.levelNo; i++) {
+      this.addMouseOver(i - 1);
+    }
+  }
+  
+  addMouseOver(i) {
+    var x = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('x');
+    var y = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('y');
+    var transf = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('transform').toString();
+    
+    var d = transf.slice(transf.indexOf('translate(') + 10, -1).split(',');
+    
+    
+    var meanLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    // boxLabel.setAttribute('class', 'label boxData-' + i + ' hidden');
+    // meanLabel.setAttributeNS(null, 'x', x);
+    // meanLabel.setAttributeNS(null, 'y', y);
+    meanLabel.setAttributeNS(null, 'transform', 'translate(' + Number(x) + ', ' + (Number(y) - Number(d[1])) + ') scale(1, -1)');
+    meanLabel.setAttributeNS(null, 'dominant-baseline', 'baseline');
+    // meanLabel.setAttributeNS(null, 'text-anchor', 'start');
+    meanLabel.setAttribute('class', 'label hidden group-mean-label');
+    meanLabel.setAttribute('id', 'group-mean-' + i);
+    // boxLabel.setAttributeNS(null, 'id', textinput);
+    
+    var textNode = document.createTextNode(this.mean[i]);
+    meanLabel.appendChild(textNode);
+    this.meanPoint[i].appendChild(meanLabel);
+    
+    this.meanPoint[i].setAttribute('onclick', 'showMean(' + i + ')');
+    this.meanPoint[i].setAttribute('style', 'cursor: pointer');
+    
+    return this;
+  }
+}
+
+showMean = function(i) {
+  var boxData = d3.select('#group-mean-' + i);
+    boxData.classed('hidden', !boxData.classed('hidden'));
+}
+
+
+/** LEGEND CLASS
+ * For attaching legend interactivity
+ * Includes trend line interactivity for scatter plots
+ * Generally for coloured bar plots, colored dot plots and scatter plots
+ * @param props - generally refers to the plot class identified */
+class Legend {
+
+  constructor(props) {
+    this.legendLayout = document.getElementById('inz-leg-layout.1');
+    this.legLineLayout = document.getElementById('inz-leg-lines.1');
+    this.levelNo = (props.levelNo) ? props.levelNo : 1;
+    this.chartType = props.chartType;
+    this.colGroupNo = props.colGroupNo;
+    this.varNames = props.chart.varNames;
+    this.Grob = props.Grob;
+    this.tbl = props.tbl;
+    this.trendInfo = props.chart.trendInfo;
+  }
+
+  // This is used to enable legend interactivity for dot plots and scatter plots
+  enableHandlers() {
+    if (!this.legendLayout) return;
+    let colGroupNo = this.colGroupNo;
+
+    //grab legend text and respective key:
+    let keyText = document.querySelectorAll('tspan[id^="inz-leg-txt-"]');
+    let key = document.querySelectorAll('use[id^="inz-leg-pt-"]');
+    let Grob = this.Grob;
+    let table = this.tbl;
+    let varNames = this.varNames;
+
+    function subset(i) {
+      let ind = i + 1;
+      //get the title variable:
+      var titleVar = document.getElementById('inz-leg-title.1.1.tspan.1').textContent;
+      var key = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      var keyText = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1').textContent;
+      var names = varNames;
+      var count = document.getElementsByClassName('point').length;
+      var el = document.querySelectorAll(Grob);
+
+      for (let j = 1; j <= count; j++) {
+          var point = document.getElementById(el[0].id + '.' + j);
+          if (key.getAttribute('fill') == point.getAttribute('stroke')) {
+              point.setAttribute('class', 'point selected');
+          } else {
+              point.setAttribute('class', 'point none');
+          }
+      }
+
+      // find column index + filter: (add one for hidden column)
+      var colInd = names.indexOf(titleVar) + 1;
+      table.search('').columns().search('').draw();
+      table.columns(colInd).search("^" + keyText + "$", true, false).draw();
+    }
+
+    this.addHandlers(subset);
+  }
+
+  /** Add interactivity to key and text in legend
+   * @param {Function} subset - A function to filter by a certain group when
+   * user clicks on the group (e.g. dots + table are filtered)
+   * In this case, the subset function is different for dot plots/scatter plots
+   * and for bar plots. However, the hovers are practically the same (show/out functions) */
+  addHandlers(subset) {
+    let keyText = document.querySelectorAll('tspan[id^="inz-leg-txt-"]');
+    let key = document.querySelectorAll('use[id^="inz-leg-pt-"]');
+
+    function show(i) {
+      let ind = i + 1;
+      let circle = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      let text = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1');
+      if (circle.getAttribute("fill") !== "none") {
+            text.setAttribute('fill', circle.getAttribute('fill'));
+        } else {
+            text.setAttribute('fill', circle.getAttribute('stroke'));
+        }
+      circle.setAttribute("class", "show");
+      text.setAttribute("class", "show");
+    }
+
+    function out(i) {
+      let ind = i + 1;
+      let keyText = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1');
+      let key = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      keyText.setAttribute("class", "out keyText");
+      key.setAttribute("class", "show");
+    }
+
+    // text handlers:
+    d3.selectAll(keyText)
+      .on("mouseover", (d, i) => show(i))
+      .on("mouseout", (d, i) => out(i))
+      .on("click", (d, i) => subset(i));
+
+    // circle handlers:
+    d3.selectAll(key)
+      .on("mouseover", (d, i) => show(i))
+      .on("mouseout", (d, i) => out(i))
+      .on("click", (d, i) => subset(i));
+  }
+
+  /** This is used to enable trend line interactivity
+   * Primarily adds interactivity to trend lines
+   * @param {String} t - trend line class ("linear", "quadratic", "cubic")
+   * @param {String} g - HTML label generated for the trend line
+   * @param ptip - d3 object for tooltip
+   * Only found on scatter plots only */
+  enableTrends(t, g, ptip) {
+    let legLineLayout = this.legLineLayout;
+
+    d3.select(legLineLayout).selectAll("." + t)
+    .on('mouseover', function() {
+        d3.select(this).style("opacity", 0.5);
+    })
+    .on('mouseout', function() {
+        d3.select(this).style("opacity", 1);
+    })
+    .on('click', function() {
+        d3.selectAll('.trend')
+        .classed('hidden', function() {
+          return((this.getAttribute('class').includes(t) === true) ? false : true);
+      });
+
+      return ptip.classed("hidden", false)
+                 .html(g);
+        });
+
+    d3.selectAll(".trend." + t)
+      .on("mouseover", function() {
+          d3.select(".tooltip")
+            .style("left", d3.event.pageX - 50 + "px")
+            .style("top", d3.event.pageY - 50 + "px")
+            .style("visibility", "visible")
+            .html(g);
+          })
+      .on("mouseout", function() {
+          d3.select(".tooltip")
+            .style("visibility", "hidden");
+          })
+  }
+
+  /** Get the equation of the trend line and create tooltip labels
+   * @param t - type of trend identified ("Linear", "Quadratic", "Cubic")
+   * @return returns HTML for tooltip label
+   * trendInfo is stored in chart information */
+  getEquation(t) {
+    let trendInfo = this.trendInfo;
+    switch(t) {
+        case "linear":
+        return "Linear fit:" + "<span> y = " + trendInfo[t][0] + " " +
+               (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + "</span> <br />" + "R" + "<sup>2</sup> : " + "<span>"
+               + trendInfo[t][2] + "</span>";
+        break;
+
+        case "quadratic":
+        return "Quadratic fit:" + "<span> y = " + trendInfo[t][0] + " "
+               + (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + (trendInfo[t][2] > 0 ? ("+" + trendInfo[t][2]) : trendInfo[t][2])
+               + "x<sup>2</sup>" + "</span>" + "<br />"+ "R" + "<sup>2</sup> : " + "<span>"
+               + trendInfo["rank.cor"][0] + "</span>";
+        break;
+
+        case "cubic":
+        return "Cubic fit: <span> y = " + trendInfo[t][0] + " " +
+               (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + (trendInfo[t][2] > 0 ? ("+" + trendInfo[t][2]) : trendInfo[t][2])
+               + "x<sup>2</sup> " + (trendInfo[t][3] > 0 ? ("+" + trendInfo[t][3]) : trendInfo[t][3])
+               + "x<sup>3</sup> </span>" + "<br />" +  "R" + "<sup>2</sup> : <span>"
+               + trendInfo["rank.cor"][0] + "</span>";
+        break;
+
+        default:
+        return "Invalid trend!";
+    }
+  }
+
+  /** For identifying if there is a separate trend line legend present
+   * Main function for enabling interactivity for trend lines */
+  trendLegend() {
+    // if there is no legend, return:
+    if (!this.legLineLayout) return;
+
+    let trendInfo = this.trendInfo;
+    var lines = d3.select(this.legLineLayout).selectAll('polyline')
+                  .attr('class', function() {
+                    var id = this.id;
+                    var type = id.substring(id.lastIndexOf("-") + 1, id.indexOf("."));
+                    return type;
+                  });
+    var keys = d3.select(this.legLineLayout).selectAll('tspan')
+                 .attr('class', function() { return this.innerHTML; });
+
+    //insert text into the control panel:
+    var ptip = d3.select('#control')
+             .append("p")
+             .attr('class', 'trend-info')
+             .classed("hidden", true);
+
+   var ll = this.legLineLayout.querySelectorAll('tspan');
+
+   //loop over lines
+   for (var i = 0; i < ll.length; i++) {
+       var t = ll[i].innerHTML;
+       var line = document.getElementById('inz-trend-' + t + '.1.1.1.1');
+       line.setAttribute('class', t + ' trend');
+
+       var g = this.getEquation(t);
+       this.enableTrends(t, g, ptip);
+   }
+  }
+
+  // To initialize legend interactivity (both trendlines and groups)
+  init() {
+    // enable handlers on legend
+    this.enableHandlers();
+    //enable trend legend handlers:
+    this.trendLegend();
+  }
+
+}
+
+/** =================================================
+  ON LOAD FUNCTION
+  Facilitates all toggles on navigation bar and
+  initializes appropriate plot
+ ================================================== **/
+
+$(function() {
+  $(".view-tbl").click(function() {
+    $(".tbl-div").removeClass("expand").toggleClass("moveRight");
+    $(".svg-div").removeClass("moveLeft").toggleClass("mid");
+    // for bars:
+    $(".Percentage").toggleClass("hidden");
+    $(".Count").toggleClass("hidden");
+  });
+
+  $(".plot").click(function() {
+    $(".svg-div").removeClass("mid").toggleClass("moveLeft");
+    $(".tbl-div").removeClass("moveRight").toggleClass("expand");
+  });
+
+  $(".help").click(function() {
+    $(".help-overlay").toggleClass("move");
+  });
+
+  $(".help-overlay").click(function() {
+    $(".help-overlay").toggleClass("move");
+  });
+
+  // load chart:
+  var plot;
+
+  switch(chart.type[0]) {
+    //for inzplots:
+    case "hex":
+    plot = new Hexbin(chart);
+    break;
+
+    case "hist":
+    plot = new Histogram(chart);
+    break;
+
+    case "dot":
+    case "scatter":
+    plot = new DotScatter(chart);
+    break;
+
+    case "bar":
+    plot = new UnstackedBar(chart);
+    break;
+
+    case "bp-stacked":
+    plot = new StackedBar(chart);
+    break;
+
+    //for inzmaps:
+    case "region":
+    plot = new RegionMap(chart);
+    break;
+
+    case "point":
+    plot = new CentroidMap(chart);
+    break;
+
+    case "sparklines":
+    plot = new SparkMap(chart);
+    break;
+
+    default:
+    return;
+  }
+
+  plot.init();
+  console.log("Load complete!");
+
+});
+/** DOT PLOTS AND SCATTER PLOTS
+ * Class for initializing interactivity for dot plots and scatter plots
+ * Includes scatterplots drawn with iNZightMaps */
+class DotScatter extends Inzplot {
+
+  constructor(props) {
+    super(props);
+    this.panel = document.querySelector(this.Grob);
+    // bind event handlers:
+    this.reset = this.reset.bind(this);
+    this.brushmove = this.brushmove.bind(this);
+    this.filterTable = this.filterTable.bind(this);
+  }
+
+  // create options for variable selection:
+  createForm() {
+    d3.select(".menu").insert("li", ".help")
+      .attr("class", "var-control")
+    //create form
+    var form = d3.select(".var-control").append("div")
+                    .attr("class", "form-group form-inline form-div")
+                    .attr("id", "form");
+
+    form.append("label")
+        .html("Variables to display:");
+
+    form.append("select")
+        .attr("class", "form-control select-var")
+        .attr("id", "selectVar")
+        .attr("multiple", "multiple");
+
+    // get column names:
+    var ncol = $("#table thead tr th").length;
+    var th = document.getElementsByTagName('th');
+    for (var i = 0; i <= ncol; i++) {
+        var opt = document.createElement('option');
+        if (i == 0) {
+          opt.value = 0;
+          opt.classList.add('select');
+          opt.innerHTML = "Display all";
+          opt.selected = "selected";
+        } else {
+        opt.value = i;
+        opt.innerHTML = th[i-1].innerHTML;
+      }
+      selectVar.appendChild(opt);
+    };
+  }
+
+  //filter table
+  filterTable() {
+    let table = this.tbl,
+        levelNo = this.levelNo,
+        ind = [];
+    //search for all those that are selected, then extract id num:
+    var selected = document.getElementsByClassName('selected');
+    for (var j = 0; j < selected.length; j++) {
+        var id = selected[j].id;
+        if (levelNo > 1) {
+          // search for the middle number due to levels:
+          var mid = id.substring(0, id.lastIndexOf('.1.'));
+          var levNum = Number(mid.substring(mid.lastIndexOf('.') + 1));
+          var num = Number(id.substring(id.lastIndexOf('.') + 1));
+          // actual index in table:
+          var idNum = chart.countsTab[levNum - 1] + num;
+        } else {
+          var idNum = id.substring(id.lastIndexOf('.') + 1);
+        }
+        ind.push("^" + idNum + "$");
+    }
+
+    table.search('').columns().search('').draw();
+    table.columns(0).search(ind.join("|"), true, false).draw();
+  }
+
+  // set tooltip and point interactions
+  setHovers() {
+    var tooltip = this.tooltip,
+        Grob = document.querySelectorAll(this.Grob),
+        data = this.data,
+        levelNo = this.levelNo,
+        filterTable = this.filterTable,
+        table = this.tbl;
+
+    d3.selectAll(Grob).selectAll("use")
+      .attr("class", "point");
+
+      d3.selectAll('.point')
+        .data(data)
+        .attr('class', 'point')
+        .on('mouseover', function (d, i) {
+            var g = ' ';
+            var names = chart.varNames;
+            var selectVar = document.getElementsByTagName('select')[0];
+            var sOpt = selectVar.selectedOptions;
+            var s = [];
+            for (j = 0; j < sOpt.length; j++) {
+                s.push(Number(sOpt[j].value));
+              }
+
+            for (var j = 0; j < s.length; j++) {
+              if (s[j] !== undefined) {
+                var w = names[s[j]-1] + ": <span>"
+                var t =  data[i][names[s[j]-1]] + "</span> <br>"
+             }
+
+             var g = w + t + g;
+             var p = s.length;
+
+             if (s.includes(0)) {
+               var g = ' ';
+               for (var k = 0; k < names.length; k++) {
+                 var w = names[k] + ": <span>"
+                 var t =  data[i][names[k]] + "</span> <br>"
+               var g = w + t + g;
+               var p = names.length;
+             }
+           }
+         }
+
+         return tooltip.style('visibility', 'visible')
+                       .style("left", d3.event.pageX - 50 + "px")
+                       .style("top", d3.event.pageY - 30 - 15*(p-1) + "px")
+                       .html(g);
+          })
+          .on('mouseout', function () { return tooltip.style("visibility", 'hidden'); })
+          .on('click', function (d, i) {
+            var selected = this;
+            // clear selection box:
+            d3.selectAll('.selection')
+              .style("display", "none");
+
+            d3.selectAll('.point')
+              .attr("class", function() {
+                  if (!d3.event.shiftKey) {
+                    return (this === selected) ? "point selected" : "point none";
+                  } else {
+                    if (this.getAttribute('class') === "point selected") {
+                      return "point selected";
+                    } else if (this === selected) {
+                        return "point selected";
+                    } else {
+                      return "point none";
+                    }
+                }
+              });
+
+              filterTable();
+
+          })
+          .on('dblclick', function (d, i) { // deselect
+            var selected = this;
+             selected.setAttribute('class', 'point none');
+             filterTable();
+          });
+  }
+
+  // add brush to the plot
+  addBrush() {
+    var tag, selector;
+    // identify if a raster map is present (from iNZightMaps)
+    if (document.querySelectorAll('g[id^="background.map"]').length > 0) {
+      tag = "inz-plot-bg.1.1.1";
+      selector = 4;
+    }  else {
+      tag = "inz-x-grid.1.1.1";
+      selector = 4;
+    }
+
+    let pp = document.getElementById(tag).parentNode;
+    this.enableBrush(pp, selector, "xy", false);
+  }
+
+  brushmove() {
+    var s = d3.event.selection,
+        x1 = s[0][0],
+        x2 = s[1][0],
+        y1 = s[0][1],
+        y2 = s[1][1],
+        ind = [];
+
+    d3.selectAll('.point')
+          .attr('class', function(d, i) {
+            var selected = this;
+            var x = this.x.baseVal.value;
+            var y = this.y.baseVal.value;
+            if ((x1 <= x && x <= x2) && (y1 <= y && y <= y2)) {
+              return('point selected');
+            } else {
+              return('point none');
+            }
+          });
+
+    this.filterTable();
+  }
+
+  reset() {
+    d3.selectAll('.point')
+      .classed("none selected", false);
+
+    // restore table to original state
+    this.tbl.search('').columns().search('').draw();
+    this.tbl.rows().nodes().to$().removeClass('active');
+
+    d3.selectAll('.label')
+    .classed("hidden", true);
+
+    // clear selection box:
+    d3.selectAll('.selection')
+      .style("display", "none");
+
+    d3.selectAll('.trend')
+      .classed("hidden", false);
+
+    d3.select('.trend-info')
+      .classed("hidden", true);
+  }
+
+  init() {
+    //initialize table:
+    var tbl = new Table(this.chartType);
+    tbl.init();
+    tbl.tableToPlot(tbl.DT, this.panel, "point");
+    this.tbl = tbl.DT;
+
+    // set tooltip:
+    this.createForm();
+    this.setTooltip(100);
+    this.setHovers();
+    this.addBrush();
+
+    // init box plot if it's a dot plot and boxplots are enabled:
+    if (this.chartType === "dot" && this.chart.boxData.length > 0) {
+      var box = new Boxplot(this.chart);
+      box.init();
+    }
+    
+    if (this.chartType === 'dot' && this.chart.meanData.length > 0) {
+      var meanInds = new MeanIndicator(this.chart);
+      meanInds.init();
+    }
+
+    //enable legend interactions
+    let legend = new Legend(this);
+    legend.init();
+
+    //enable event handlers:
+    d3.select("#reset")
+      .on("click", this.reset);
+
+    d3.select(".overlay")
+      .on("dblclick", this.reset);
+  }
+
+} </script>
+  </body>
+</html>

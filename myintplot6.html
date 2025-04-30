@@ -1,0 +1,2927 @@
+<!DOCTYPE HTML>
+<!-- template for HTML conversion plot -->
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> iNZight Plot </title>
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+<style> /* layout settings */
+#main {
+  position: fixed;
+  display: flex;
+  width: 100%;
+  top: 60px;
+  height: calc(100% - 60px);
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px;
+  background-color: #e3e3e3;
+  overflow: hidden;
+}
+
+.svg-div, .tbl-div {
+  transition: all ease-in-out 0.5s;
+  padding: 20px;
+  border-radius: 5px;
+  height: 100%;
+  background-color: white;
+  box-shadow: 0 0 3px #B0BEC5;
+  min-width: 50%;
+}
+
+.tbl-div {
+   overflow-x: auto;
+}
+
+/*moveEverything left/right */
+.moveRight {
+  transform: translateX(200%);
+}
+
+.moveLeft {
+  transform: translateX(-200%);
+}
+
+.expand {
+  min-width: 100%;
+  transform: translateX(-50%);
+}
+
+.mid {
+  min-width: 100%;
+  /*transform: translateX(50%);*/
+}
+
+svg {
+  display: inline-block;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+}
+
+/* attempt to use media queries */
+@media (max-width: 600px), (orientation: portrait) {
+
+  #main {
+    position: fixed;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .svg-div, .tbl-div {
+    transition: all ease-in-out 0.5s;
+    width: 100%;
+    min-height: 50%;
+  }
+
+  svg {
+    height: 100%;
+  }
+
+  .tbl-div {
+    overflow-y: auto;
+  }
+
+  /* move everything up/down */
+  .moveRight {
+    transform: translateY(200%);
+  }
+
+  .moveLeft {
+    transform: translateY(-200%);
+  }
+
+  .mid {
+    min-height: 100%;
+    /*transform: translateY(50%);*/
+  }
+
+  .expand {
+    min-height: 100%;
+    transform: translateY(-50%);
+  }
+
+  label {
+    display: none;
+  }
+
+}
+
+/* navigation bar */
+#control {
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 60px;
+  background-color: #12508a;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: right;
+  font-size: 15px;
+  margin: 5px;
+  transition: all ease 0.3s;
+  padding: 7px;
+  border-radius: 3px;
+}
+
+.menu li:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.glyphicon {
+  font-size: 15px;
+}
+
+#selectVar {
+  height: 45px;
+}
+
+.form-div {
+  margin: 15px 0px;
+}
+
+label {
+  color: rgba(255, 255, 255, 0.8);
+  margin-right: 5px;
+  font-weight: normal;
+}
+
+/* style help overlay */
+.help-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: -1;
+  transition: all ease 0.5s;
+  overflow-y: auto;
+}
+
+.help-info {
+  padding: 10px;
+  margin: auto;
+  color: black;
+  background-color: white;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.title {
+  font-size: 25px;
+}
+
+.move {
+  opacity: 1;
+  z-index: 5;
+}
+
+.logo {
+  width: 20%;
+}
+
+/*** TABLE PROPERTIES ***/
+/*totals column  or totals row */
+table {
+  width: 100% !important;
+}
+
+td, th {
+  text-align: center;
+  word-wrap: break-word;
+  font-size: 12px;
+}
+
+/* table headings */
+.headings {
+  font-style: italic;
+  font-weight:normal;
+  text-decoration: underline;
+  text-align: center;
+  align: center;
+}
+
+/* groups for two way bar plots */
+.yGroup, .tc {
+  text-align: center;
+  font-weight: bold;
+}
+
+.Percentage {
+  background-color:rgb(0, 0, 255);
+  color: white;
+  opacity: 0.75;
+  margin-left: 10px;
+}
+
+.Count {
+ background-color: purple;
+ opacity: 0.75;
+ color: white;
+ margin-left: 10px;
+}
+
+.trend-info, .brush-info {
+  color: white;
+}
+
+/* textlabels */
+.label {
+  font-size: 10;
+  fill: black;
+  stroke: none;
+  fill-opacity: 1;
+  text-anchor: middle;
+  visibility: inherit;
+  font-weight: normal;
+}
+
+/* BAR PROPERTIES (for bar charts) */
+.bar {
+  stroke: none;
+  visibility: visible;
+  opacity: 1;
+}
+
+.bar:hover {
+  stroke-width: 50%;
+  fill-opacity: 0.5;
+}
+
+/* upon selection */
+.selected {
+  opacity: 1;
+  visibility: visible;
+}
+
+.none {
+  opacity: 0.2;
+}
+
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+
+/*highlighting data */
+.totalRow, .tabSelect, .select {
+  align: center;
+  font-weight: bold;
+}
+
+.rowSelect {
+  display: table-row;
+  opacity: 1;
+}
+
+/* legend interactions and styling */
+.show {
+  font-size: 115%;
+  fill-opacity: 0.5;
+}
+
+.out {
+  font-size: 100%;
+  fill-opacity: 1;
+}
+
+.keyText {
+  fill: black;
+}
+
+/* for box plots - dot plots, histograms */
+.box {
+  fill: gray;
+  fill-opacity: 0.5;
+}
+
+.fillBox {
+  fill-opacity: 0.2;
+}
+
+/* for dot plots and scatter plots */
+.point:hover { /* showPoint */
+  fill: currentColor;
+  stroke-width: 50%;
+  fill-opacity: 1;
+}
+
+/* for histograms and hexbins */
+.histBar {
+  stroke: white;
+  stroke-width: 0.25;
+}
+
+.hexbin {
+  stroke: none;
+}
+
+.hexbin:hover, .histBar:hover {
+  fill-opacity: 0.5;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 5px;
+    z-index: 5;
+    opacity: 1;
+    visibility: hidden;
+    font: 11px sans-serif;
+    background: white;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+span {
+  font-weight: bold;
+}
+
+/* for iNZightMaps */
+.selectRegion {
+  stroke: darkgray;
+  fill: black;
+  fill-opacity: 0.5;
+}
+
+/* line chart container */
+.spark-div {
+  width: 100%;
+  padding: 10px;
+  clear: left;
+}
+
+/* ggplot2 theme for sparkline chart */
+.grid-background {
+  fill: #ddd;
+}
+
+.spark-xaxis path, .spark-yaxis path {
+  display: none;
+}
+
+.grid-lines {
+  stroke: #fff;
+  stroke-width: 0.75px;
+}
+
+.grid path {
+  display: none;
+}
+
+.minor {
+  stroke-opacity: 0.5;
+  stroke-width: 0.5px;
+}
+
+.grid text {
+  display: none;
+}
+
+/* lines on the chart */
+.spark-line {
+  fill: none;
+  stroke: black;
+  opacity: 0.2;
+  stroke-width: 1.5;
+}
+
+.follow-text {
+    stroke: white;
+    fill: black;
+    stroke-width: 0.05;
+    font-size: 12px;
+    text-anchor: middle;
+}
+
+.region-lab {
+  font-size: 13px;
+}
+
+.x-lab, .spark-title, .main-title {
+  text-anchor: middle;
+}
+
+.x-lab, .y-lab {
+  font-size: 16px;
+}
+
+.main-title, .spark-title {
+  fill: black;
+  fill-opacity: 1;
+  font-size: 18px;
+}
+
+.x-line {
+  stroke: black;
+  stroke-width: 0.5;
+}
+
+/* time slider */
+.slider-div {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  height: 5px;
+  border-radius: 5px;
+  background: lightgray;
+  width: calc(100% - 15px);
+  display: inline-block;
+}
+
+/* circle thumb */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: black;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.slider-val {
+  width: 55px;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  line-height: 12px;
+  margin: auto;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: darkgray;
+}
+
+/* play-pause button */
+.play-pause {
+    text-align: center;
+    margin: auto;
+    width: 100%;
+}
+
+.group-mean-label {
+  pointer-events: none;
+} </style>
+    <script type = "text/javascript" src = "https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
+    <script type = "text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type = "text/javascript" src ="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"> </script>
+    <script type = "text/javascript" charset="utf8" src = "https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+  </head>
+  <body>
+    <!-- control panel -->
+    <div class = "control" id = "control">
+      <ul class = "menu">
+        <li class = "plot"> <span class="glyphicon glyphicon-stats"></span> Plot </li>
+        <li class = "view-tbl"><span class="glyphicon glyphicon-list-alt"></span> Table </li>
+        <li class = "reset" id = "reset"> <span class="glyphicon glyphicon-refresh"></span> Reset </li>
+        <li class = "help"><span class = "glyphicon glyphicon-question-sign"> </span> </li>
+      </ul>
+    </div>
+    <div id = "main">
+      <div class = "svg-div">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="326px" height="368px" viewBox="0 0 326 368" version="1.1">
+  <metadata xmlns:gridsvg="http://www.stat.auckland.ac.nz/~paul/R/gridSVG/">
+    <gridsvg:generator name="gridSVG" version="1.7-5" time="2025-04-29 18:50:41.489971"/>
+    <gridsvg:argument name="name" value=""/>
+    <gridsvg:argument name="exportCoords" value="none"/>
+    <gridsvg:argument name="exportMappings" value="none"/>
+    <gridsvg:argument name="exportJS" value="none"/>
+    <gridsvg:argument name="res" value="76"/>
+    <gridsvg:argument name="prefix" value=""/>
+    <gridsvg:argument name="addClasses" value="FALSE"/>
+    <gridsvg:argument name="indent" value="TRUE"/>
+    <gridsvg:argument name="htmlWrapper" value="FALSE"/>
+    <gridsvg:argument name="usePaths" value="vpPaths"/>
+    <gridsvg:argument name="uniqueNames" value="TRUE"/>
+    <gridsvg:separator name="id.sep" value="."/>
+    <gridsvg:separator name="gPath.sep" value="::"/>
+    <gridsvg:separator name="vpPath.sep" value="::"/>
+  </metadata>
+  <g transform="translate(0, 368) scale(1, -1)">
+    <g id="gridSVG" fill="rgb(255,255,255)" stroke="rgb(0,0,0)" stroke-dasharray="none" stroke-width="0.79" font-size="12.67" font-family="Helvetica, Arial, FreeSans, Liberation Sans, Nimbus Sans L, sans-serif" opacity="1" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill-opacity="1" font-weight="normal" font-style="normal">
+      <defs>
+        <symbol id="gridSVG.pch21" viewBox="-5 -5 10 10" overflow="visible">
+          <circle cx="0" cy="0" r="3.75"/>
+        </symbol>
+      </defs>
+      <g id="container.1" font-size="12.67">
+        <g id="container::VP:TOPlayout.1">
+          <g id="container::VP:TOPlayout::GRID.VP.4324.1"/>
+          <g id="container::VP:TOPlayout::GRID.VP.4325.1">
+            <g id="inz-main-title.1">
+              <g id="inz-main-title.1.1" transform="translate(204, 448)" stroke-width="0.1">
+                <g id="inz-main-title.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-main-title.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="15.2">
+                    <tspan id="inz-main-title.1.1.tspan.1" dy="6" x="0">Energy use versus CO2 emissions</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.2" font-size="12.67">
+        <g id="container::VP:TOPlayout.2">
+          <g id="container::VP:TOPlayout::GRID.VP.4326.1">
+            <g id="inz-ylab.1">
+              <g id="inz-ylab.1.1" transform="translate(9.12, 242.5)" stroke-width="0.1">
+                <g id="inz-ylab.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-ylab.1.1.text" transform="rotate(-90)" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="12.67">
+                    <tspan id="inz-ylab.1.1.tspan.1" dy="5.5" x="0">Energy use per person</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.3" font-size="12.67">
+        <g id="container::VP:TOPlayout.3">
+          <g id="container::VP:TOPlayout::GRID.VP.4327.1">
+            <g id="inz-xlab.1">
+              <g id="inz-xlab.1.1" transform="translate(220.5, 25.12)" stroke-width="0.1">
+                <g id="inz-xlab.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-xlab.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="12.67">
+                    <tspan id="inz-xlab.1.1.tspan.1" dy="5.5" x="0">CO2 emissions per person </tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.4" font-size="12.67">
+        <g id="container::VP:TOPlayout.4">
+          <g id="container::VP:TOPlayout::GRID.VP.4328.1">
+            <g id="inz-main-sub-bottom.1">
+              <g id="inz-main-sub-bottom.1.1" transform="translate(220.5, 8)" stroke-width="0.1">
+                <g id="inz-main-sub-bottom.1.1.scale" transform="scale(1, -1)">
+                  <text x="0" y="0" id="inz-main-sub-bottom.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="10.13">
+                    <tspan id="inz-main-sub-bottom.1.1.tspan.1" dy="4" x="0">101 missing values (32 in CO2Emissions, 101 in EnergyUsePerPerson)</tspan>
+                  </text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g id="container.5" font-size="12.67">
+        <g id="container::VP:TOPlayout.5">
+          <g id="container::VP:TOPlayout::GRID.VP.4329.1">
+            <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout.1"/>
+          </g>
+        </g>
+      </g>
+      <g id="container.6" font-size="12.67">
+        <g id="container::VP:TOPlayout.6">
+          <g id="container::VP:TOPlayout::GRID.VP.4329.2">
+            <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout.2">
+              <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330.1" font-size="15.2">
+                <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331.1">
+                  <defs>
+                    <clipPath id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::VP:locate.these.points.1.clipPath">
+                      <rect x="64.32" y="73.32" width="312.36" height="338.36" fill="none" stroke="none"/>
+                    </clipPath>
+                  </defs>
+                  <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::VP:locate.these.points.1" clip-path="url(#container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::VP:locate.these.points.1.clipPath)">
+                    <g id="inz-plot-bg.1.1.1">
+                      <rect id="inz-plot-bg.1.1.1.1" x="64.32" y="73.32" width="312.36" height="338.36" transform="" fill="rgb(238,238,238)" stroke-dasharray="none" fill-opacity="1"/>
+                    </g>
+                    <g id="inz-x-grid.1.1.1">
+                      <polyline id="inz-x-grid.1.1.1.1" points="78.03,73.32 78.03,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.2" points="136.56,73.32 136.56,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.3" points="195.1,73.32 195.1,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.4" points="253.64,73.32 253.64,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.5" points="312.17,73.32 312.17,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-x-grid.1.1.1.6" points="370.71,73.32 370.71,411.68" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                    </g>
+                    <g id="inz-y-grid.1.1.1">
+                      <polyline id="inz-y-grid.1.1.1.1" points="64.32,86.18 376.68,86.18" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-y-grid.1.1.1.2" points="64.32,178.11 376.68,178.11" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-y-grid.1.1.1.3" points="64.32,270.03 376.68,270.03" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-y-grid.1.1.1.4" points="64.32,361.95 376.68,361.95" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                      <polyline id="inz-y-grid.1.1.1.5" points="64.32,453.87 376.68,453.87" stroke="rgb(255,255,255)" stroke-width="0.79" stroke-opacity="1" fill="none"/>
+                    </g>
+                    <g id="inz-SCATTERPOINTS.1.1.1">
+                      <use id="inz-SCATTERPOINTS.1.1.1.1" href="#gridSVG.pch21" x="101.57" y="111.72" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,136)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.2" href="#gridSVG.pch21" x="135.5" y="159.34" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,238,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.3" href="#gridSVG.pch21" x="89.22" y="104.83" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(204,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.4" href="#gridSVG.pch21" x="127.91" y="150.44" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(163,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.5" href="#gridSVG.pch21" x="109.04" y="115.14" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(231,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.6" href="#gridSVG.pch21" x="81.43" y="94.31" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,238)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.7" href="#gridSVG.pch21" x="113.56" y="161.81" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(48,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.8" href="#gridSVG.pch21" x="87.13" y="111.4" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(27,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.9" href="#gridSVG.pch21" x="99.47" y="108.64" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,197)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.10" href="#gridSVG.pch21" x="133.86" y="160.99" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(7,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.11" href="#gridSVG.pch21" x="261.22" y="287.22" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,224)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.12" href="#gridSVG.pch21" x="83.89" y="91.99" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,20)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.13" href="#gridSVG.pch21" x="127.79" y="156.58" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(231,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.14" href="#gridSVG.pch21" x="78.65" y="92.29" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,61,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.15" href="#gridSVG.pch21" x="114.22" y="123.52" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,170,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.16" href="#gridSVG.pch21" x="139.67" y="201.09" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(20,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.17" href="#gridSVG.pch21" x="285.09" y="353.32" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,150)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.18" href="#gridSVG.pch21" x="86.89" y="95.85" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,122)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.19" href="#gridSVG.pch21" x="80.17" y="93.26" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.20" href="#gridSVG.pch21" x="100.22" y="103.52" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,143)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.21" href="#gridSVG.pch21" x="133.21" y="141.84" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(252,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.22" href="#gridSVG.pch21" x="80.13" y="90.86" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,224,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.23" href="#gridSVG.pch21" x="108.97" y="128.37" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(197,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.24" href="#gridSVG.pch21" x="86.67" y="98.11" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(224,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.25" href="#gridSVG.pch21" x="136.39" y="148.31" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,150)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.26" href="#gridSVG.pch21" x="102.04" y="107.93" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,116,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.27" href="#gridSVG.pch21" x="78.52" y="88.7" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(102,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.28" href="#gridSVG.pch21" x="135.23" y="143.74" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,163)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.29" href="#gridSVG.pch21" x="104.39" y="137.81" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,224,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.30" href="#gridSVG.pch21" x="79.9" y="89.7" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,109,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.31" href="#gridSVG.pch21" x="108.99" y="123.75" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(190,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.32" href="#gridSVG.pch21" x="82.61" y="96.13" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,27,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.33" href="#gridSVG.pch21" x="184.95" y="192.42" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,75,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.34" href="#gridSVG.pch21" x="86.52" y="95.9" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(68,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.35" href="#gridSVG.pch21" x="89.72" y="103" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(48,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.36" href="#gridSVG.pch21" x="206.2" y="244.47" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,218,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.37" href="#gridSVG.pch21" x="117.19" y="133.91" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,204,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.38" href="#gridSVG.pch21" x="125.9" y="160.16" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,82,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.39" href="#gridSVG.pch21" x="97.59" y="122.57" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,245)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.40" href="#gridSVG.pch21" x="121.75" y="140.26" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,170)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.41" href="#gridSVG.pch21" x="87.61" y="94.98" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,95,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.42" href="#gridSVG.pch21" x="116.49" y="176.7" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(218,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.43" href="#gridSVG.pch21" x="103.72" y="119.98" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(109,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.44" href="#gridSVG.pch21" x="109.14" y="185.09" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,211)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.45" href="#gridSVG.pch21" x="93.75" y="103.05" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(122,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.46" href="#gridSVG.pch21" x="96.95" y="106.18" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,14,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.47" href="#gridSVG.pch21" x="86.77" y="96.76" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,48)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.48" href="#gridSVG.pch21" x="239.6" y="259.61" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,197,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.49" href="#gridSVG.pch21" x="109.25" y="150.55" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,204)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.50" href="#gridSVG.pch21" x="116.01" y="140.07" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,122,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.51" href="#gridSVG.pch21" x="213.19" y="247.68" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,102,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.52" href="#gridSVG.pch21" x="86.47" y="98.27" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,34,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.53" href="#gridSVG.pch21" x="158.19" y="160.78" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(88,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.54" href="#gridSVG.pch21" x="82.49" y="94.34" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(75,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.55" href="#gridSVG.pch21" x="81.17" y="93.4" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,143,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.56" href="#gridSVG.pch21" x="120.72" y="142.29" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,245)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.57" href="#gridSVG.pch21" x="84.85" y="97.88" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,95)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.58" href="#gridSVG.pch21" x="139.77" y="208.23" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(54,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.59" href="#gridSVG.pch21" x="80.16" y="92.88" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,231)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.60" href="#gridSVG.pch21" x="92.31" y="102.96" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,143)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.61" href="#gridSVG.pch21" x="83.37" y="97.14" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,48)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.62" href="#gridSVG.pch21" x="102.66" y="119.36" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(238,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.63" href="#gridSVG.pch21" x="104.87" y="121.67" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,54,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.64" href="#gridSVG.pch21" x="125" y="138.01" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,136)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.65" href="#gridSVG.pch21" x="83.59" y="95.14" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(34,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.66" href="#gridSVG.pch21" x="163.81" y="168.53" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,204)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.67" href="#gridSVG.pch21" x="101.95" y="110.12" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,252)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.68" href="#gridSVG.pch21" x="109.95" y="134.64" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,109)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.69" href="#gridSVG.pch21" x="92.6" y="109.08" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,75)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.70" href="#gridSVG.pch21" x="93.51" y="103.33" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(184,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.71" href="#gridSVG.pch21" x="78.64" y="93.92" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,88,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.72" href="#gridSVG.pch21" x="82.12" y="99.01" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(61,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.73" href="#gridSVG.pch21" x="116.06" y="132.36" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,54)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.74" href="#gridSVG.pch21" x="112.67" y="114.04" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,88,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.75" href="#gridSVG.pch21" x="89.2" y="99.76" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,75,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.76" href="#gridSVG.pch21" x="88.3" y="100.81" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,129)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.77" href="#gridSVG.pch21" x="119.83" y="396.3" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,116)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.78" href="#gridSVG.pch21" x="86.47" y="97.54" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,163,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.79" href="#gridSVG.pch21" x="127.92" y="148.59" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,88)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.80" href="#gridSVG.pch21" x="126.43" y="115.19" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,170,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.81" href="#gridSVG.pch21" x="133.89" y="157.49" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,184)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.82" href="#gridSVG.pch21" x="126.43" y="133.39" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(82,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.83" href="#gridSVG.pch21" x="139.68" y="175.11" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,54,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.84" href="#gridSVG.pch21" x="86.34" y="98.78" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(14,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.85" href="#gridSVG.pch21" x="92.94" y="106.42" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,177,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.86" href="#gridSVG.pch21" x="135.92" y="186.74" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,129,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.87" href="#gridSVG.pch21" x="79.5" y="94.34" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,170)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.88" href="#gridSVG.pch21" x="89.87" y="110.02" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,184,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.89" href="#gridSVG.pch21" x="88.59" y="104.08" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,61,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.90" href="#gridSVG.pch21" x="173.74" y="232.26" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,238,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.91" href="#gridSVG.pch21" x="171.44" y="196.96" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(27,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.92" href="#gridSVG.pch21" x="103.25" y="116.28" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,129,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.93" href="#gridSVG.pch21" x="186.59" y="223.84" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,82)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.94" href="#gridSVG.pch21" x="79.59" y="94.66" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,211)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.95" href="#gridSVG.pch21" x="119.22" y="140.29" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,102)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.96" href="#gridSVG.pch21" x="122.59" y="134.99" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,190,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.97" href="#gridSVG.pch21" x="79.49" y="91.42" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,82)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.98" href="#gridSVG.pch21" x="110.15" y="128.47" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(88,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.99" href="#gridSVG.pch21" x="78.94" y="97.53" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,14)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.100" href="#gridSVG.pch21" x="90.38" y="100.61" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(129,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.101" href="#gridSVG.pch21" x="128.73" y="135.95" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,14)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.102" href="#gridSVG.pch21" x="148.17" y="175.35" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(116,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.103" href="#gridSVG.pch21" x="102.35" y="115.17" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,184)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.104" href="#gridSVG.pch21" x="79.76" y="92.45" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,231,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.105" href="#gridSVG.pch21" x="362.48" y="367.66" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(102,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.106" href="#gridSVG.pch21" x="124.08" y="110.29" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,109,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.107" href="#gridSVG.pch21" x="97.08" y="101.55" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(14,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.108" href="#gridSVG.pch21" x="81.63" y="99.75" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,14,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.109" href="#gridSVG.pch21" x="80.74" y="92.97" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,190)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.110" href="#gridSVG.pch21" x="85.62" y="98.24" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,7,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.111" href="#gridSVG.pch21" x="84.25" y="99.68" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(116,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.112" href="#gridSVG.pch21" x="78.55" y="93.46" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(82,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.113" href="#gridSVG.pch21" x="124.12" y="161.18" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,34,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.114" href="#gridSVG.pch21" x="80.19" y="96.14" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(197,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.115" href="#gridSVG.pch21" x="124.52" y="130.33" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(177,255,0)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.116" href="#gridSVG.pch21" x="171.58" y="194.44" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(184,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.117" href="#gridSVG.pch21" x="103.73" y="115.35" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,255,177)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.118" href="#gridSVG.pch21" x="222.36" y="258.96" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,95)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.119" href="#gridSVG.pch21" x="82.29" y="99.88" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,7)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.120" href="#gridSVG.pch21" x="80.66" y="90.98" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(190,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.121" href="#gridSVG.pch21" x="143.51" y="168.8" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,129)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.122" href="#gridSVG.pch21" x="105.3" y="120.19" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(255,0,68)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.123" href="#gridSVG.pch21" x="79.61" y="92.03" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(0,82,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                      <use id="inz-SCATTERPOINTS.1.1.1.124" href="#gridSVG.pch21" x="118.43" y="148.42" width="12.16" height="12.16" transform=" translate(-6.08,-6.08)" stroke="rgb(224,0,255)" stroke-width="1.3" opacity="1" fill="none" stroke-opacity="1" fill-opacity="0" font-size="10.13"/>
+                    </g>
+                    <g id="GRID.text.3398.1">
+                      <g id="GRID.text.3398.1.1" transform="translate(102.66, 137.36)" stroke-width="0.1">
+                        <g id="GRID.text.3398.1.1.scale" transform="scale(1, -1)">
+                          <text x="0" y="0" id="GRID.text.3398.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1" font-size="7.6">
+                            <tspan id="GRID.text.3398.1.1.tspan.1" dy="4" x="0">Chile</tspan>
+                          </text>
+                        </g>
+                      </g>
+                    </g>
+                    <g id="inz-trend-linear.1.1.1">
+                      <polyline id="inz-trend-linear.1.1.1.1" points="64.32,79.01 64.63,79.36 64.94,79.71 65.26,80.06 65.57,80.4 65.88,80.75 66.19,81.1 66.51,81.45 66.82,81.8 67.13,82.15 67.44,82.49 67.76,82.84 68.07,83.19 68.38,83.54 68.69,83.89 69.01,84.23 69.32,84.58 69.63,84.93 69.94,85.28 70.25,85.63 70.57,85.98 70.88,86.32 71.19,86.67 71.5,87.02 71.82,87.37 72.13,87.72 72.44,88.07 72.75,88.41 73.07,88.76 73.38,89.11 73.69,89.46 74,89.81 74.32,90.16 74.63,90.5 74.94,90.85 75.25,91.2 75.56,91.55 75.88,91.9 76.19,92.24 76.5,92.59 76.81,92.94 77.13,93.29 77.44,93.64 77.75,93.99 78.06,94.33 78.38,94.68 78.69,95.03 79,95.38 79.31,95.73 79.63,96.08 79.94,96.42 80.25,96.77 80.56,97.12 80.88,97.47 81.19,97.82 81.5,98.17 81.81,98.51 82.12,98.86 82.44,99.21 82.75,99.56 83.06,99.91 83.37,100.26 83.69,100.6 84,100.95 84.31,101.3 84.62,101.65 84.94,102 85.25,102.34 85.56,102.69 85.87,103.04 86.19,103.39 86.5,103.74 86.81,104.09 87.12,104.43 87.43,104.78 87.75,105.13 88.06,105.48 88.37,105.83 88.68,106.18 89,106.52 89.31,106.87 89.62,107.22 89.93,107.57 90.25,107.92 90.56,108.27 90.87,108.61 91.18,108.96 91.5,109.31 91.81,109.66 92.12,110.01 92.43,110.35 92.74,110.7 93.06,111.05 93.37,111.4 93.68,111.75 93.99,112.1 94.31,112.44 94.62,112.79 94.93,113.14 95.24,113.49 95.56,113.84 95.87,114.19 96.18,114.53 96.49,114.88 96.81,115.23 97.12,115.58 97.43,115.93 97.74,116.28 98.05,116.62 98.37,116.97 98.68,117.32 98.99,117.67 99.3,118.02 99.62,118.37 99.93,118.71 100.24,119.06 100.55,119.41 100.87,119.76 101.18,120.11 101.49,120.45 101.8,120.8 102.12,121.15 102.43,121.5 102.74,121.85 103.05,122.2 103.37,122.54 103.68,122.89 103.99,123.24 104.3,123.59 104.61,123.94 104.93,124.29 105.24,124.63 105.55,124.98 105.86,125.33 106.18,125.68 106.49,126.03 106.8,126.38 107.11,126.72 107.43,127.07 107.74,127.42 108.05,127.77 108.36,128.12 108.68,128.46 108.99,128.81 109.3,129.16 109.61,129.51 109.92,129.86 110.24,130.21 110.55,130.55 110.86,130.9 111.17,131.25 111.49,131.6 111.8,131.95 112.11,132.3 112.42,132.64 112.74,132.99 113.05,133.34 113.36,133.69 113.67,134.04 113.99,134.39 114.3,134.73 114.61,135.08 114.92,135.43 115.23,135.78 115.55,136.13 115.86,136.48 116.17,136.82 116.48,137.17 116.8,137.52 117.11,137.87 117.42,138.22 117.73,138.56 118.05,138.91 118.36,139.26 118.67,139.61 118.98,139.96 119.3,140.31 119.61,140.65 119.92,141 120.23,141.35 120.54,141.7 120.86,142.05 121.17,142.4 121.48,142.74 121.79,143.09 122.11,143.44 122.42,143.79 122.73,144.14 123.04,144.49 123.36,144.83 123.67,145.18 123.98,145.53 124.29,145.88 124.61,146.23 124.92,146.57 125.23,146.92 125.54,147.27 125.85,147.62 126.17,147.97 126.48,148.32 126.79,148.66 127.1,149.01 127.42,149.36 127.73,149.71 128.04,150.06 128.35,150.41 128.67,150.75 128.98,151.1 129.29,151.45 129.6,151.8 129.92,152.15 130.23,152.5 130.54,152.84 130.85,153.19 131.17,153.54 131.48,153.89 131.79,154.24 132.1,154.59 132.41,154.93 132.73,155.28 133.04,155.63 133.35,155.98 133.66,156.33 133.98,156.67 134.29,157.02 134.6,157.37 134.91,157.72 135.23,158.07 135.54,158.42 135.85,158.76 136.16,159.11 136.48,159.46 136.79,159.81 137.1,160.16 137.41,160.51 137.72,160.85 138.04,161.2 138.35,161.55 138.66,161.9 138.97,162.25 139.29,162.6 139.6,162.94 139.91,163.29 140.22,163.64 140.54,163.99 140.85,164.34 141.16,164.68 141.47,165.03 141.79,165.38 142.1,165.73 142.41,166.08 142.72,166.43 143.03,166.77 143.35,167.12 143.66,167.47 143.97,167.82 144.28,168.17 144.6,168.52 144.91,168.86 145.22,169.21 145.53,169.56 145.85,169.91 146.16,170.26 146.47,170.61 146.78,170.95 147.1,171.3 147.41,171.65 147.72,172 148.03,172.35 148.34,172.7 148.66,173.04 148.97,173.39 149.28,173.74 149.59,174.09 149.91,174.44 150.22,174.78 150.53,175.13 150.84,175.48 151.16,175.83 151.47,176.18 151.78,176.53 152.09,176.87 152.41,177.22 152.72,177.57 153.03,177.92 153.34,178.27 153.65,178.62 153.97,178.96 154.28,179.31 154.59,179.66 154.9,180.01 155.22,180.36 155.53,180.71 155.84,181.05 156.15,181.4 156.47,181.75 156.78,182.1 157.09,182.45 157.4,182.79 157.72,183.14 158.03,183.49 158.34,183.84 158.65,184.19 158.97,184.54 159.28,184.88 159.59,185.23 159.9,185.58 160.21,185.93 160.53,186.28 160.84,186.63 161.15,186.97 161.46,187.32 161.78,187.67 162.09,188.02 162.4,188.37 162.71,188.72 163.03,189.06 163.34,189.41 163.65,189.76 163.96,190.11 164.28,190.46 164.59,190.81 164.9,191.15 165.21,191.5 165.52,191.85 165.84,192.2 166.15,192.55 166.46,192.89 166.77,193.24 167.09,193.59 167.4,193.94 167.71,194.29 168.02,194.64 168.34,194.98 168.65,195.33 168.96,195.68 169.27,196.03 169.59,196.38 169.9,196.73 170.21,197.07 170.52,197.42 170.83,197.77 171.15,198.12 171.46,198.47 171.77,198.82 172.08,199.16 172.4,199.51 172.71,199.86 173.02,200.21 173.33,200.56 173.65,200.9 173.96,201.25 174.27,201.6 174.58,201.95 174.9,202.3 175.21,202.65 175.52,202.99 175.83,203.34 176.14,203.69 176.46,204.04 176.77,204.39 177.08,204.74 177.39,205.08 177.71,205.43 178.02,205.78 178.33,206.13 178.64,206.48 178.96,206.83 179.27,207.17 179.58,207.52 179.89,207.87 180.21,208.22 180.52,208.57 180.83,208.92 181.14,209.26 181.46,209.61 181.77,209.96 182.08,210.31 182.39,210.66 182.7,211 183.02,211.35 183.33,211.7 183.64,212.05 183.95,212.4 184.27,212.75 184.58,213.09 184.89,213.44 185.2,213.79 185.52,214.14 185.83,214.49 186.14,214.84 186.45,215.18 186.77,215.53 187.08,215.88 187.39,216.23 187.7,216.58 188.01,216.93 188.33,217.27 188.64,217.62 188.95,217.97 189.26,218.32 189.58,218.67 189.89,219.01 190.2,219.36 190.51,219.71 190.83,220.06 191.14,220.41 191.45,220.76 191.76,221.1 192.08,221.45 192.39,221.8 192.7,222.15 193.01,222.5 193.32,222.85 193.64,223.19 193.95,223.54 194.26,223.89 194.57,224.24 194.89,224.59 195.2,224.94 195.51,225.28 195.82,225.63 196.14,225.98 196.45,226.33 196.76,226.68 197.07,227.03 197.39,227.37 197.7,227.72 198.01,228.07 198.32,228.42 198.63,228.77 198.95,229.11 199.26,229.46 199.57,229.81 199.88,230.16 200.2,230.51 200.51,230.86 200.82,231.2 201.13,231.55 201.45,231.9 201.76,232.25 202.07,232.6 202.38,232.95 202.7,233.29 203.01,233.64 203.32,233.99 203.63,234.34 203.94,234.69 204.26,235.04 204.57,235.38 204.88,235.73 205.19,236.08 205.51,236.43 205.82,236.78 206.13,237.12 206.44,237.47 206.76,237.82 207.07,238.17 207.38,238.52 207.69,238.87 208.01,239.21 208.32,239.56 208.63,239.91 208.94,240.26 209.26,240.61 209.57,240.96 209.88,241.3 210.19,241.65 210.5,242 210.82,242.35 211.13,242.7 211.44,243.05 211.75,243.39 212.07,243.74 212.38,244.09 212.69,244.44 213,244.79 213.32,245.14 213.63,245.48 213.94,245.83 214.25,246.18 214.57,246.53 214.88,246.88 215.19,247.22 215.5,247.57 215.81,247.92 216.13,248.27 216.44,248.62 216.75,248.97 217.06,249.31 217.38,249.66 217.69,250.01 218,250.36 218.31,250.71 218.63,251.06 218.94,251.4 219.25,251.75 219.56,252.1 219.88,252.45 220.19,252.8 220.5,253.15 220.81,253.49 221.12,253.84 221.44,254.19 221.75,254.54 222.06,254.89 222.37,255.23 222.69,255.58 223,255.93 223.31,256.28 223.62,256.63 223.94,256.98 224.25,257.32 224.56,257.67 224.87,258.02 225.19,258.37 225.5,258.72 225.81,259.07 226.12,259.41 226.43,259.76 226.75,260.11 227.06,260.46 227.37,260.81 227.68,261.16 228,261.5 228.31,261.85 228.62,262.2 228.93,262.55 229.25,262.9 229.56,263.25 229.87,263.59 230.18,263.94 230.5,264.29 230.81,264.64 231.12,264.99 231.43,265.33 231.74,265.68 232.06,266.03 232.37,266.38 232.68,266.73 232.99,267.08 233.31,267.42 233.62,267.77 233.93,268.12 234.24,268.47 234.56,268.82 234.87,269.17 235.18,269.51 235.49,269.86 235.81,270.21 236.12,270.56 236.43,270.91 236.74,271.26 237.06,271.6 237.37,271.95 237.68,272.3 237.99,272.65 238.3,273 238.62,273.34 238.93,273.69 239.24,274.04 239.55,274.39 239.87,274.74 240.18,275.09 240.49,275.43 240.8,275.78 241.12,276.13 241.43,276.48 241.74,276.83 242.05,277.18 242.37,277.52 242.68,277.87 242.99,278.22 243.3,278.57 243.61,278.92 243.93,279.27 244.24,279.61 244.55,279.96 244.86,280.31 245.18,280.66 245.49,281.01 245.8,281.36 246.11,281.7 246.43,282.05 246.74,282.4 247.05,282.75 247.36,283.1 247.68,283.44 247.99,283.79 248.3,284.14 248.61,284.49 248.92,284.84 249.24,285.19 249.55,285.53 249.86,285.88 250.17,286.23 250.49,286.58 250.8,286.93 251.11,287.28 251.42,287.62 251.74,287.97 252.05,288.32 252.36,288.67 252.67,289.02 252.99,289.37 253.3,289.71 253.61,290.06 253.92,290.41 254.23,290.76 254.55,291.11 254.86,291.45 255.17,291.8 255.48,292.15 255.8,292.5 256.11,292.85 256.42,293.2 256.73,293.54 257.05,293.89 257.36,294.24 257.67,294.59 257.98,294.94 258.3,295.29 258.61,295.63 258.92,295.98 259.23,296.33 259.55,296.68 259.86,297.03 260.17,297.38 260.48,297.72 260.79,298.07 261.11,298.42 261.42,298.77 261.73,299.12 262.04,299.47 262.36,299.81 262.67,300.16 262.98,300.51 263.29,300.86 263.61,301.21 263.92,301.55 264.23,301.9 264.54,302.25 264.86,302.6 265.17,302.95 265.48,303.3 265.79,303.64 266.1,303.99 266.42,304.34 266.73,304.69 267.04,305.04 267.35,305.39 267.67,305.73 267.98,306.08 268.29,306.43 268.6,306.78 268.92,307.13 269.23,307.48 269.54,307.82 269.85,308.17 270.17,308.52 270.48,308.87 270.79,309.22 271.1,309.56 271.41,309.91 271.73,310.26 272.04,310.61 272.35,310.96 272.66,311.31 272.98,311.65 273.29,312 273.6,312.35 273.91,312.7 274.23,313.05 274.54,313.4 274.85,313.74 275.16,314.09 275.48,314.44 275.79,314.79 276.1,315.14 276.41,315.49 276.72,315.83 277.04,316.18 277.35,316.53 277.66,316.88 277.97,317.23 278.29,317.58 278.6,317.92 278.91,318.27 279.22,318.62 279.54,318.97 279.85,319.32 280.16,319.66 280.47,320.01 280.79,320.36 281.1,320.71 281.41,321.06 281.72,321.41 282.03,321.75 282.35,322.1 282.66,322.45 282.97,322.8 283.28,323.15 283.6,323.5 283.91,323.84 284.22,324.19 284.53,324.54 284.85,324.89 285.16,325.24 285.47,325.59 285.78,325.93 286.1,326.28 286.41,326.63 286.72,326.98 287.03,327.33 287.35,327.67 287.66,328.02 287.97,328.37 288.28,328.72 288.59,329.07 288.91,329.42 289.22,329.76 289.53,330.11 289.84,330.46 290.16,330.81 290.47,331.16 290.78,331.51 291.09,331.85 291.41,332.2 291.72,332.55 292.03,332.9 292.34,333.25 292.66,333.6 292.97,333.94 293.28,334.29 293.59,334.64 293.9,334.99 294.22,335.34 294.53,335.69 294.84,336.03 295.15,336.38 295.47,336.73 295.78,337.08 296.09,337.43 296.4,337.77 296.72,338.12 297.03,338.47 297.34,338.82 297.65,339.17 297.97,339.52 298.28,339.86 298.59,340.21 298.9,340.56 299.21,340.91 299.53,341.26 299.84,341.61 300.15,341.95 300.46,342.3 300.78,342.65 301.09,343 301.4,343.35 301.71,343.7 302.03,344.04 302.34,344.39 302.65,344.74 302.96,345.09 303.28,345.44 303.59,345.78 303.9,346.13 304.21,346.48 304.52,346.83 304.84,347.18 305.15,347.53 305.46,347.87 305.77,348.22 306.09,348.57 306.4,348.92 306.71,349.27 307.02,349.62 307.34,349.96 307.65,350.31 307.96,350.66 308.27,351.01 308.59,351.36 308.9,351.71 309.21,352.05 309.52,352.4 309.83,352.75 310.15,353.1 310.46,353.45 310.77,353.79 311.08,354.14 311.4,354.49 311.71,354.84 312.02,355.19 312.33,355.54 312.65,355.88 312.96,356.23 313.27,356.58 313.58,356.93 313.9,357.28 314.21,357.63 314.52,357.97 314.83,358.32 315.15,358.67 315.46,359.02 315.77,359.37 316.08,359.72 316.39,360.06 316.71,360.41 317.02,360.76 317.33,361.11 317.64,361.46 317.96,361.81 318.27,362.15 318.58,362.5 318.89,362.85 319.21,363.2 319.52,363.55 319.83,363.89 320.14,364.24 320.46,364.59 320.77,364.94 321.08,365.29 321.39,365.64 321.7,365.98 322.02,366.33 322.33,366.68 322.64,367.03 322.95,367.38 323.27,367.73 323.58,368.07 323.89,368.42 324.2,368.77 324.52,369.12 324.83,369.47 325.14,369.82 325.45,370.16 325.77,370.51 326.08,370.86 326.39,371.21 326.7,371.56 327.01,371.9 327.33,372.25 327.64,372.6 327.95,372.95 328.26,373.3 328.58,373.65 328.89,373.99 329.2,374.34 329.51,374.69 329.83,375.04 330.14,375.39 330.45,375.74 330.76,376.08 331.08,376.43 331.39,376.78 331.7,377.13 332.01,377.48 332.32,377.83 332.64,378.17 332.95,378.52 333.26,378.87 333.57,379.22 333.89,379.57 334.2,379.92 334.51,380.26 334.82,380.61 335.14,380.96 335.45,381.31 335.76,381.66 336.07,382 336.39,382.35 336.7,382.7 337.01,383.05 337.32,383.4 337.64,383.75 337.95,384.09 338.26,384.44 338.57,384.79 338.88,385.14 339.2,385.49 339.51,385.84 339.82,386.18 340.13,386.53 340.45,386.88 340.76,387.23 341.07,387.58 341.38,387.93 341.7,388.27 342.01,388.62 342.32,388.97 342.63,389.32 342.95,389.67 343.26,390.01 343.57,390.36 343.88,390.71 344.19,391.06 344.51,391.41 344.82,391.76 345.13,392.1 345.44,392.45 345.76,392.8 346.07,393.15 346.38,393.5 346.69,393.85 347.01,394.19 347.32,394.54 347.63,394.89 347.94,395.24 348.26,395.59 348.57,395.94 348.88,396.28 349.19,396.63 349.5,396.98 349.82,397.33 350.13,397.68 350.44,398.03 350.75,398.37 351.07,398.72 351.38,399.07 351.69,399.42 352,399.77 352.32,400.11 352.63,400.46 352.94,400.81 353.25,401.16 353.57,401.51 353.88,401.86 354.19,402.2 354.5,402.55 354.81,402.9 355.13,403.25 355.44,403.6 355.75,403.95 356.06,404.29 356.38,404.64 356.69,404.99 357,405.34 357.31,405.69 357.63,406.04 357.94,406.38 358.25,406.73 358.56,407.08 358.88,407.43 359.19,407.78 359.5,408.12 359.81,408.47 360.12,408.82 360.44,409.17 360.75,409.52 361.06,409.87 361.37,410.21 361.69,410.56 362,410.91 362.31,411.26 362.62,411.61 362.94,411.96 363.25,412.3 363.56,412.65 363.87,413 364.19,413.35 364.5,413.7 364.81,414.05 365.12,414.39 365.44,414.74 365.75,415.09 366.06,415.44 366.37,415.79 366.68,416.14 367,416.48 367.31,416.83 367.62,417.18 367.93,417.53 368.25,417.88 368.56,418.22 368.87,418.57 369.18,418.92 369.5,419.27 369.81,419.62 370.12,419.97 370.43,420.31 370.75,420.66 371.06,421.01 371.37,421.36 371.68,421.71 371.99,422.06 372.31,422.4 372.62,422.75 372.93,423.1 373.24,423.45 373.56,423.8 373.87,424.15 374.18,424.49 374.49,424.84 374.81,425.19 375.12,425.54 375.43,425.89 375.74,426.23 376.06,426.58 376.37,426.93 376.68,427.28" stroke="rgb(255,0,0)" stroke-width="1.58" stroke-dasharray="none" stroke-opacity="1" fill="none"/>
+                    </g>
+                  </g>
+                  <g id="inz-rect-tp.1.1.1">
+                    <rect id="inz-rect-tp.1.1.1.1" x="64.32" y="73.32" width="312.36" height="338.36" transform="" fill="none" fill-opacity="0"/>
+                  </g>
+                  <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::GRID.VP.4332.1">
+                    <g id="inz-xaxis-bottom.1.1.1" font-size="10.13">
+                      <g id="major.1">
+                        <polyline id="major.1.1" points="78.03,73.32 370.71,73.32" fill="none"/>
+                      </g>
+                      <g id="ticks.1">
+                        <polyline id="ticks.1.1" points="78.03,73.32 78.03,64.2" fill="none"/>
+                        <polyline id="ticks.1.2" points="136.56,73.32 136.56,64.2" fill="none"/>
+                        <polyline id="ticks.1.3" points="195.1,73.32 195.1,64.2" fill="none"/>
+                        <polyline id="ticks.1.4" points="253.64,73.32 253.64,64.2" fill="none"/>
+                        <polyline id="ticks.1.5" points="312.17,73.32 312.17,64.2" fill="none"/>
+                        <polyline id="ticks.1.6" points="370.71,73.32 370.71,64.2" fill="none"/>
+                      </g>
+                      <g id="labels.1">
+                        <g id="labels.1.1" transform="translate(78.03, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.1.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.1.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.1.tspan.1" dy="6" x="0"> 0</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.2" transform="translate(136.56, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.2.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.2.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.2.tspan.1" dy="6" x="0">10</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.3" transform="translate(195.1, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.3.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.3.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.3.tspan.1" dy="6" x="0">20</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.4" transform="translate(253.64, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.4.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.4.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.4.tspan.1" dy="6" x="0">30</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.5" transform="translate(312.17, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.5.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.5.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.5.tspan.1" dy="6" x="0">40</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.1.6" transform="translate(370.71, 45.96)" stroke-width="0.1">
+                          <g id="labels.1.6.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.1.6.text" text-anchor="middle" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.1.6.tspan.1" dy="6" x="0">50</tspan>
+                            </text>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                    <g id="inz-yaxis-left.1.1.1" font-size="10.13">
+                      <g id="major.2">
+                        <polyline id="major.2.1" points="64.32,86.18 64.32,361.95" fill="none"/>
+                      </g>
+                      <g id="ticks.2">
+                        <polyline id="ticks.2.1" points="64.32,86.18 55.2,86.18" fill="none"/>
+                        <polyline id="ticks.2.2" points="64.32,178.11 55.2,178.11" fill="none"/>
+                        <polyline id="ticks.2.3" points="64.32,270.03 55.2,270.03" fill="none"/>
+                        <polyline id="ticks.2.4" points="64.32,361.95 55.2,361.95" fill="none"/>
+                      </g>
+                      <g id="labels.2">
+                        <g id="labels.2.1" transform="translate(46.08, 86.18)" stroke-width="0.1">
+                          <g id="labels.2.1.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.2.1.text" text-anchor="end" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.2.1.tspan.1" dy="6" x="0"> 0</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.2.2" transform="translate(46.08, 178.11)" stroke-width="0.1">
+                          <g id="labels.2.2.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.2.2.text" text-anchor="end" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.2.2.tspan.1" dy="6" x="0"> 5</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.2.3" transform="translate(46.08, 270.03)" stroke-width="0.1">
+                          <g id="labels.2.3.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.2.3.text" text-anchor="end" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.2.3.tspan.1" dy="6" x="0">10</tspan>
+                            </text>
+                          </g>
+                        </g>
+                        <g id="labels.2.4" transform="translate(46.08, 361.95)" stroke-width="0.1">
+                          <g id="labels.2.4.scale" transform="scale(1, -1)">
+                            <text x="0" y="0" id="labels.2.4.text" text-anchor="end" fill="rgb(0,0,0)" fill-opacity="1">
+                              <tspan id="labels.2.4.tspan.1" dy="6" x="0">15</tspan>
+                            </text>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                    <g id="inz-yaxis-right.1.1.1" font-size="10.13">
+                      <g id="major.3">
+                        <polyline id="major.3.1" points="376.68,86.18 376.68,361.95" fill="none"/>
+                      </g>
+                      <g id="ticks.3">
+                        <polyline id="ticks.3.1" points="376.68,86.18 385.8,86.18" fill="none"/>
+                        <polyline id="ticks.3.2" points="376.68,178.11 385.8,178.11" fill="none"/>
+                        <polyline id="ticks.3.3" points="376.68,270.03 385.8,270.03" fill="none"/>
+                        <polyline id="ticks.3.4" points="376.68,361.95 385.8,361.95" fill="none"/>
+                      </g>
+                    </g>
+                  </g>
+                  <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::GRID.VP.4333.1">
+                    <g id="container::VP:TOPlayout::GRID.VP.4329::VP:PLOTlayout::GRID.VP.4330::GRID.VP.4331::GRID.VP.4333::GRID.VP.4334.1">
+                      <g id="inz-xaxis-top.1.1.1" font-size="10.13">
+                        <g id="major.4">
+                          <polyline id="major.4.1" points="78.03,411.68 370.71,411.68" fill="none"/>
+                        </g>
+                        <g id="ticks.4">
+                          <polyline id="ticks.4.1" points="78.03,411.68 78.03,420.8" fill="none"/>
+                          <polyline id="ticks.4.2" points="136.56,411.68 136.56,420.8" fill="none"/>
+                          <polyline id="ticks.4.3" points="195.1,411.68 195.1,420.8" fill="none"/>
+                          <polyline id="ticks.4.4" points="253.64,411.68 253.64,420.8" fill="none"/>
+                          <polyline id="ticks.4.5" points="312.17,411.68 312.17,420.8" fill="none"/>
+                          <polyline id="ticks.4.6" points="370.71,411.68 370.71,420.8" fill="none"/>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg> 
+      </div>
+      <div class = "tbl-div table-responsive">
+<table id="table" class="table table-condensed table-hover" cellspacing="0">
+<caption>Data</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:center;"> Country </th>
+   <th style="text-align:center;"> Year </th>
+   <th style="text-align:center;"> CO2Emissions </th>
+   <th style="text-align:center;"> EnergyUsePerPerson </th>
+   <th style="text-align:center;"> Populationtotal </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:center;"> Turkey </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.0219026 </td>
+   <td style="text-align:center;"> 1.3888402 </td>
+   <td style="text-align:center;"> 70923730 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 2 </td>
+   <td style="text-align:center;"> Libya </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.8183302 </td>
+   <td style="text-align:center;"> 3.9793857 </td>
+   <td style="text-align:center;"> 6149620 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 3 </td>
+   <td style="text-align:center;"> Costa Rica </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.9119334 </td>
+   <td style="text-align:center;"> 1.0144609 </td>
+   <td style="text-align:center;"> 4522124 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 4 </td>
+   <td style="text-align:center;"> Denmark </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.5214980 </td>
+   <td style="text-align:center;"> 3.4950990 </td>
+   <td style="text-align:center;"> 5497312 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 5 </td>
+   <td style="text-align:center;"> China </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.2978996 </td>
+   <td style="text-align:center;"> 1.5748313 </td>
+   <td style="text-align:center;"> 1328275524 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 6 </td>
+   <td style="text-align:center;"> Sri Lanka </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.5809702 </td>
+   <td style="text-align:center;"> 0.4422963 </td>
+   <td style="text-align:center;"> 20473799 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 7 </td>
+   <td style="text-align:center;"> France </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.0703484 </td>
+   <td style="text-align:center;"> 4.1136215 </td>
+   <td style="text-align:center;"> 62098413 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 8 </td>
+   <td style="text-align:center;"> Gabon </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.5548400 </td>
+   <td style="text-align:center;"> 1.3717088 </td>
+   <td style="text-align:center;"> 1450310 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 9 </td>
+   <td style="text-align:center;"> Jordan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 3.6629354 </td>
+   <td style="text-align:center;"> 1.2215265 </td>
+   <td style="text-align:center;"> 5848952 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 10 </td>
+   <td style="text-align:center;"> Germany </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.5371698 </td>
+   <td style="text-align:center;"> 4.0689540 </td>
+   <td style="text-align:center;"> 82475271 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 11 </td>
+   <td style="text-align:center;"> Kuwait </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 31.2947471 </td>
+   <td style="text-align:center;"> 10.9350651 </td>
+   <td style="text-align:center;"> 2548351 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 12 </td>
+   <td style="text-align:center;"> Yemen </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.0008282 </td>
+   <td style="text-align:center;"> 0.3156707 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 13 </td>
+   <td style="text-align:center;"> Slovenia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.5009272 </td>
+   <td style="text-align:center;"> 3.8290257 </td>
+   <td style="text-align:center;"> 2018172 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 14 </td>
+   <td style="text-align:center;"> Nepal </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.1054130 </td>
+   <td style="text-align:center;"> 0.3320693 </td>
+   <td style="text-align:center;"> 28905358 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 15 </td>
+   <td style="text-align:center;"> Malta </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.1827710 </td>
+   <td style="text-align:center;"> 2.0307732 </td>
+   <td style="text-align:center;"> 413946 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 16 </td>
+   <td style="text-align:center;"> Norway </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 10.5297688 </td>
+   <td style="text-align:center;"> 6.2500252 </td>
+   <td style="text-align:center;"> 4778959 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 17 </td>
+   <td style="text-align:center;"> Trinidad and Tobago </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 35.3735926 </td>
+   <td style="text-align:center;"> 14.5308255 </td>
+   <td style="text-align:center;"> 1331040 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 18 </td>
+   <td style="text-align:center;"> India </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.5131827 </td>
+   <td style="text-align:center;"> 0.5257377 </td>
+   <td style="text-align:center;"> 1190863679 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 19 </td>
+   <td style="text-align:center;"> Ghana </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.3666008 </td>
+   <td style="text-align:center;"> 0.3850494 </td>
+   <td style="text-align:center;"> 23264176 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 20 </td>
+   <td style="text-align:center;"> Iraq </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 3.7905889 </td>
+   <td style="text-align:center;"> 0.9428020 </td>
+   <td style="text-align:center;"> 29821136 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 21 </td>
+   <td style="text-align:center;"> South Africa </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.4266222 </td>
+   <td style="text-align:center;"> 3.0275962 </td>
+   <td style="text-align:center;"> 49319363 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 22 </td>
+   <td style="text-align:center;"> Cambodia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.3583733 </td>
+   <td style="text-align:center;"> 0.2541862 </td>
+   <td style="text-align:center;"> 13822644 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 23 </td>
+   <td style="text-align:center;"> Serbia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.2861258 </td>
+   <td style="text-align:center;"> 2.2946432 </td>
+   <td style="text-align:center;"> 9841360 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 24 </td>
+   <td style="text-align:center;"> Colombia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4760918 </td>
+   <td style="text-align:center;"> 0.6489815 </td>
+   <td style="text-align:center;"> 45005782 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 25 </td>
+   <td style="text-align:center;"> Ireland </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.9709785 </td>
+   <td style="text-align:center;"> 3.3793051 </td>
+   <td style="text-align:center;"> 4352866 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 26 </td>
+   <td style="text-align:center;"> Mongolia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.1017582 </td>
+   <td style="text-align:center;"> 1.1831148 </td>
+   <td style="text-align:center;"> 2667474 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 27 </td>
+   <td style="text-align:center;"> Eritrea </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.0837456 </td>
+   <td style="text-align:center;"> 0.1368855 </td>
+   <td style="text-align:center;"> 4947521 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 28 </td>
+   <td style="text-align:center;"> Israel </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.7716442 </td>
+   <td style="text-align:center;"> 3.1309753 </td>
+   <td style="text-align:center;"> 7092324 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 29 </td>
+   <td style="text-align:center;"> Lithuania </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.5028487 </td>
+   <td style="text-align:center;"> 2.8083955 </td>
+   <td style="text-align:center;"> 3359799 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 30 </td>
+   <td style="text-align:center;"> Bangladesh </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.3192114 </td>
+   <td style="text-align:center;"> 0.1910530 </td>
+   <td style="text-align:center;"> 145478300 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 31 </td>
+   <td style="text-align:center;"> Croatia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.2895623 </td>
+   <td style="text-align:center;"> 2.0431942 </td>
+   <td style="text-align:center;"> 4418387 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 32 </td>
+   <td style="text-align:center;"> Nicaragua </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.7827060 </td>
+   <td style="text-align:center;"> 0.5409141 </td>
+   <td style="text-align:center;"> 5635577 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 33 </td>
+   <td style="text-align:center;"> Australia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 18.2656569 </td>
+   <td style="text-align:center;"> 5.7788173 </td>
+   <td style="text-align:center;"> 21513817 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 34 </td>
+   <td style="text-align:center;"> Peru </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4500056 </td>
+   <td style="text-align:center;"> 0.5285534 </td>
+   <td style="text-align:center;"> 28463338 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 35 </td>
+   <td style="text-align:center;"> Panama </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.9966806 </td>
+   <td style="text-align:center;"> 0.9147198 </td>
+   <td style="text-align:center;"> 3406487 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 36 </td>
+   <td style="text-align:center;"> Luxembourg </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 21.8969105 </td>
+   <td style="text-align:center;"> 8.6097964 </td>
+   <td style="text-align:center;"> 486781 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 37 </td>
+   <td style="text-align:center;"> Bulgaria </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.6901391 </td>
+   <td style="text-align:center;"> 2.5961196 </td>
+   <td style="text-align:center;"> 7591322 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 38 </td>
+   <td style="text-align:center;"> Austria </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.1787645 </td>
+   <td style="text-align:center;"> 4.0238009 </td>
+   <td style="text-align:center;"> 8341806 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 39 </td>
+   <td style="text-align:center;"> Latvia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 3.3418487 </td>
+   <td style="text-align:center;"> 1.9789585 </td>
+   <td style="text-align:center;"> 2271198 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 40 </td>
+   <td style="text-align:center;"> Italy </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.4689423 </td>
+   <td style="text-align:center;"> 2.9416360 </td>
+   <td style="text-align:center;"> 59891479 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 41 </td>
+   <td style="text-align:center;"> Morocco </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.6362268 </td>
+   <td style="text-align:center;"> 0.4785507 </td>
+   <td style="text-align:center;"> 31321453 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 42 </td>
+   <td style="text-align:center;"> Singapore </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.5708118 </td>
+   <td style="text-align:center;"> 4.9236899 </td>
+   <td style="text-align:center;"> 4772216 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 43 </td>
+   <td style="text-align:center;"> Romania </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.3890536 </td>
+   <td style="text-align:center;"> 1.8384190 </td>
+   <td style="text-align:center;"> 21589544 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 44 </td>
+   <td style="text-align:center;"> Sweden </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.3156884 </td>
+   <td style="text-align:center;"> 5.3799591 </td>
+   <td style="text-align:center;"> 9236872 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 45 </td>
+   <td style="text-align:center;"> Egypt </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.6850461 </td>
+   <td style="text-align:center;"> 0.9175237 </td>
+   <td style="text-align:center;"> 78323298 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 46 </td>
+   <td style="text-align:center;"> Algeria </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 3.2326665 </td>
+   <td style="text-align:center;"> 1.0876192 </td>
+   <td style="text-align:center;"> 34428028 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 47 </td>
+   <td style="text-align:center;"> Vietnam </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4933816 </td>
+   <td style="text-align:center;"> 0.5754563 </td>
+   <td style="text-align:center;"> 85951912 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 48 </td>
+   <td style="text-align:center;"> Brunei </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 27.6028196 </td>
+   <td style="text-align:center;"> 9.4335097 </td>
+   <td style="text-align:center;"> 384695 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 49 </td>
+   <td style="text-align:center;"> Switzerland </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.3330576 </td>
+   <td style="text-align:center;"> 3.5013337 </td>
+   <td style="text-align:center;"> 7573204 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:center;"> Belarus </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.4881739 </td>
+   <td style="text-align:center;"> 2.9311958 </td>
+   <td style="text-align:center;"> 9680690 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 51 </td>
+   <td style="text-align:center;"> Bahrain </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 23.0900292 </td>
+   <td style="text-align:center;"> 8.7847075 </td>
+   <td style="text-align:center;"> 1052359 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 52 </td>
+   <td style="text-align:center;"> Angola </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4426425 </td>
+   <td style="text-align:center;"> 0.6576182 </td>
+   <td style="text-align:center;"> 18037964 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 53 </td>
+   <td style="text-align:center;"> Estonia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 13.6952416 </td>
+   <td style="text-align:center;"> 4.0578723 </td>
+   <td style="text-align:center;"> 1342145 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 54 </td>
+   <td style="text-align:center;"> Philippines </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.7627881 </td>
+   <td style="text-align:center;"> 0.4436955 </td>
+   <td style="text-align:center;"> 90173139 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 55 </td>
+   <td style="text-align:center;"> Benin </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.5375392 </td>
+   <td style="text-align:center;"> 0.3924895 </td>
+   <td style="text-align:center;"> 8355980 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 56 </td>
+   <td style="text-align:center;"> Spain </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.2930888 </td>
+   <td style="text-align:center;"> 3.0518988 </td>
+   <td style="text-align:center;"> 45146258 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 57 </td>
+   <td style="text-align:center;"> Honduras </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.1653614 </td>
+   <td style="text-align:center;"> 0.6364092 </td>
+   <td style="text-align:center;"> 7302742 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 58 </td>
+   <td style="text-align:center;"> Finland </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 10.5482462 </td>
+   <td style="text-align:center;"> 6.6388225 </td>
+   <td style="text-align:center;"> 5316334 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 59 </td>
+   <td style="text-align:center;"> Sudan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.3649766 </td>
+   <td style="text-align:center;"> 0.3642741 </td>
+   <td style="text-align:center;"> 32941836 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 60 </td>
+   <td style="text-align:center;"> Tunisia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.4406695 </td>
+   <td style="text-align:center;"> 0.9126740 </td>
+   <td style="text-align:center;"> 10247325 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 61 </td>
+   <td style="text-align:center;"> Guatemala </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.9119232 </td>
+   <td style="text-align:center;"> 0.5957955 </td>
+   <td style="text-align:center;"> 13690846 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 62 </td>
+   <td style="text-align:center;"> Chile </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.2079491 </td>
+   <td style="text-align:center;"> 1.8046324 </td>
+   <td style="text-align:center;"> 16795593 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 63 </td>
+   <td style="text-align:center;"> Argentina </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.5855609 </td>
+   <td style="text-align:center;"> 1.9301727 </td>
+   <td style="text-align:center;"> 39714298 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 64 </td>
+   <td style="text-align:center;"> Iran </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.0250015 </td>
+   <td style="text-align:center;"> 2.8192032 </td>
+   <td style="text-align:center;"> 72289291 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 65 </td>
+   <td style="text-align:center;"> Pakistan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.9506839 </td>
+   <td style="text-align:center;"> 0.4873993 </td>
+   <td style="text-align:center;"> 167442258 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 66 </td>
+   <td style="text-align:center;"> Kazakhstan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 14.6543986 </td>
+   <td style="text-align:center;"> 4.4790423 </td>
+   <td style="text-align:center;"> 15655345 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 67 </td>
+   <td style="text-align:center;"> Lebanon </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.0864764 </td>
+   <td style="text-align:center;"> 1.3019075 </td>
+   <td style="text-align:center;"> 4166915 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 68 </td>
+   <td style="text-align:center;"> Hungary </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.4528659 </td>
+   <td style="text-align:center;"> 2.6357800 </td>
+   <td style="text-align:center;"> 10021886 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 69 </td>
+   <td style="text-align:center;"> Uruguay </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.4897635 </td>
+   <td style="text-align:center;"> 1.2456755 </td>
+   <td style="text-align:center;"> 3345967 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 70 </td>
+   <td style="text-align:center;"> Cuba </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.6441748 </td>
+   <td style="text-align:center;"> 0.9329048 </td>
+   <td style="text-align:center;"> 11266905 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 71 </td>
+   <td style="text-align:center;"> Mozambique </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.1044199 </td>
+   <td style="text-align:center;"> 0.4206053 </td>
+   <td style="text-align:center;"> 22332900 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 72 </td>
+   <td style="text-align:center;"> Paraguay </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.6985817 </td>
+   <td style="text-align:center;"> 0.6978737 </td>
+   <td style="text-align:center;"> 6230242 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 73 </td>
+   <td style="text-align:center;"> Venezuela </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.4966978 </td>
+   <td style="text-align:center;"> 2.5118145 </td>
+   <td style="text-align:center;"> 28057485 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 74 </td>
+   <td style="text-align:center;"> Azerbaijan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.9184221 </td>
+   <td style="text-align:center;"> 1.5154813 </td>
+   <td style="text-align:center;"> 8943600 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 75 </td>
+   <td style="text-align:center;"> Namibia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.9079674 </td>
+   <td style="text-align:center;"> 0.7382707 </td>
+   <td style="text-align:center;"> 2200422 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 76 </td>
+   <td style="text-align:center;"> Indonesia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.7555124 </td>
+   <td style="text-align:center;"> 0.7955640 </td>
+   <td style="text-align:center;"> 234951154 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 77 </td>
+   <td style="text-align:center;"> Iceland </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.1405733 </td>
+   <td style="text-align:center;"> 16.8684683 </td>
+   <td style="text-align:center;"> 310666 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 78 </td>
+   <td style="text-align:center;"> Bolivia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4421219 </td>
+   <td style="text-align:center;"> 0.6178648 </td>
+   <td style="text-align:center;"> 9618466 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 79 </td>
+   <td style="text-align:center;"> United Kingdom </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.5228762 </td>
+   <td style="text-align:center;"> 3.3943645 </td>
+   <td style="text-align:center;"> 61270318 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 80 </td>
+   <td style="text-align:center;"> Bosnia and Herzegovina </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.2685861 </td>
+   <td style="text-align:center;"> 1.5775687 </td>
+   <td style="text-align:center;"> 3774164 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 81 </td>
+   <td style="text-align:center;"> Japan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.5426905 </td>
+   <td style="text-align:center;"> 3.8789071 </td>
+   <td style="text-align:center;"> 126544640 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 82 </td>
+   <td style="text-align:center;"> Poland </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.2690402 </td>
+   <td style="text-align:center;"> 2.5676135 </td>
+   <td style="text-align:center;"> 38218462 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 83 </td>
+   <td style="text-align:center;"> Netherlands </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 10.5330281 </td>
+   <td style="text-align:center;"> 4.8371669 </td>
+   <td style="text-align:center;"> 16503263 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 84 </td>
+   <td style="text-align:center;"> Georgia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.4194298 </td>
+   <td style="text-align:center;"> 0.6853934 </td>
+   <td style="text-align:center;"> 4394018 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 85 </td>
+   <td style="text-align:center;"> Botswana </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.5472055 </td>
+   <td style="text-align:center;"> 1.1006721 </td>
+   <td style="text-align:center;"> 1954822 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 86 </td>
+   <td style="text-align:center;"> Belgium </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 9.8900222 </td>
+   <td style="text-align:center;"> 5.4695816 </td>
+   <td style="text-align:center;"> 10602167 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 87 </td>
+   <td style="text-align:center;"> Togo </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.2519833 </td>
+   <td style="text-align:center;"> 0.4436149 </td>
+   <td style="text-align:center;"> 5776837 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 88 </td>
+   <td style="text-align:center;"> Brazil </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.0237728 </td>
+   <td style="text-align:center;"> 1.2965412 </td>
+   <td style="text-align:center;"> 191543237 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 89 </td>
+   <td style="text-align:center;"> Armenia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.8041062 </td>
+   <td style="text-align:center;"> 0.9732011 </td>
+   <td style="text-align:center;"> 3079087 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 90 </td>
+   <td style="text-align:center;"> Canada </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 16.3503986 </td>
+   <td style="text-align:center;"> 7.9458465 </td>
+   <td style="text-align:center;"> 33327954 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 91 </td>
+   <td style="text-align:center;"> Oman </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 15.9586362 </td>
+   <td style="text-align:center;"> 6.0255696 </td>
+   <td style="text-align:center;"> 2636963 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 92 </td>
+   <td style="text-align:center;"> Mexico </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.3081374 </td>
+   <td style="text-align:center;"> 1.6369282 </td>
+   <td style="text-align:center;"> 110627158 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 93 </td>
+   <td style="text-align:center;"> United States of America </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 18.5459917 </td>
+   <td style="text-align:center;"> 7.4879303 </td>
+   <td style="text-align:center;"> 304989064 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 94 </td>
+   <td style="text-align:center;"> Kenya </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.2663084 </td>
+   <td style="text-align:center;"> 0.4610096 </td>
+   <td style="text-align:center;"> 38455418 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 95 </td>
+   <td style="text-align:center;"> Ukraine </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.0366642 </td>
+   <td style="text-align:center;"> 2.9431445 </td>
+   <td style="text-align:center;"> 45991584 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 96 </td>
+   <td style="text-align:center;"> Malaysia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.6123775 </td>
+   <td style="text-align:center;"> 2.6545809 </td>
+   <td style="text-align:center;"> 27502008 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 97 </td>
+   <td style="text-align:center;"> Haiti </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.2500599 </td>
+   <td style="text-align:center;"> 0.2848426 </td>
+   <td style="text-align:center;"> 9736332 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 98 </td>
+   <td style="text-align:center;"> Portugal </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 5.4869264 </td>
+   <td style="text-align:center;"> 2.2998794 </td>
+   <td style="text-align:center;"> 10634612 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 99 </td>
+   <td style="text-align:center;"> Zambia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.1557938 </td>
+   <td style="text-align:center;"> 0.6172514 </td>
+   <td style="text-align:center;"> 12379612 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 100 </td>
+   <td style="text-align:center;"> Ecuador </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 2.1105178 </td>
+   <td style="text-align:center;"> 0.7844938 </td>
+   <td style="text-align:center;"> 14056740 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 101 </td>
+   <td style="text-align:center;"> Greece </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 8.6618850 </td>
+   <td style="text-align:center;"> 2.7069803 </td>
+   <td style="text-align:center;"> 11291807 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 102 </td>
+   <td style="text-align:center;"> Russian Federation </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 11.9828969 </td>
+   <td style="text-align:center;"> 4.8501776 </td>
+   <td style="text-align:center;"> 143163100 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 103 </td>
+   <td style="text-align:center;"> Thailand </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.1556426 </td>
+   <td style="text-align:center;"> 1.5769572 </td>
+   <td style="text-align:center;"> 68267982 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 104 </td>
+   <td style="text-align:center;"> Cameroon </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.2955416 </td>
+   <td style="text-align:center;"> 0.3409175 </td>
+   <td style="text-align:center;"> 18758778 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 105 </td>
+   <td style="text-align:center;"> Qatar </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 48.5943775 </td>
+   <td style="text-align:center;"> 15.3104308 </td>
+   <td style="text-align:center;"> 1396060 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 106 </td>
+   <td style="text-align:center;"> Montenegro </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.8673204 </td>
+   <td style="text-align:center;"> 1.3113742 </td>
+   <td style="text-align:center;"> 629185 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 107 </td>
+   <td style="text-align:center;"> North Korea </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 3.2539969 </td>
+   <td style="text-align:center;"> 0.8357613 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 108 </td>
+   <td style="text-align:center;"> Nigeria </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.6153711 </td>
+   <td style="text-align:center;"> 0.7381254 </td>
+   <td style="text-align:center;"> 150665730 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 109 </td>
+   <td style="text-align:center;"> Tajikistan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.4635790 </td>
+   <td style="text-align:center;"> 0.3692888 </td>
+   <td style="text-align:center;"> 6691416 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 110 </td>
+   <td style="text-align:center;"> Albania </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.2977527 </td>
+   <td style="text-align:center;"> 0.6556513 </td>
+   <td style="text-align:center;"> 3181397 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 111 </td>
+   <td style="text-align:center;"> El Salvador </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 1.0635773 </td>
+   <td style="text-align:center;"> 0.7339852 </td>
+   <td style="text-align:center;"> 6129628 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 112 </td>
+   <td style="text-align:center;"> Ethiopia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.0894901 </td>
+   <td style="text-align:center;"> 0.3959094 </td>
+   <td style="text-align:center;"> 79446419 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 113 </td>
+   <td style="text-align:center;"> New Zealand </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.8736568 </td>
+   <td style="text-align:center;"> 4.0791422 </td>
+   <td style="text-align:center;"> 4277809 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 114 </td>
+   <td style="text-align:center;"> Cote d'Ivoire </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.3694281 </td>
+   <td style="text-align:center;"> 0.5413207 </td>
+   <td style="text-align:center;"> 18987007 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 115 </td>
+   <td style="text-align:center;"> Cyprus </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 7.9427348 </td>
+   <td style="text-align:center;"> 2.4012624 </td>
+   <td style="text-align:center;"> 1077001 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 116 </td>
+   <td style="text-align:center;"> Saudi Arabia </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 15.9822462 </td>
+   <td style="text-align:center;"> 5.8882458 </td>
+   <td style="text-align:center;"> 26166639 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 117 </td>
+   <td style="text-align:center;"> Jamaica </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.3914565 </td>
+   <td style="text-align:center;"> 1.5866597 </td>
+   <td style="text-align:center;"> 2720282 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 118 </td>
+   <td style="text-align:center;"> United Arab Emirates </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 24.6568330 </td>
+   <td style="text-align:center;"> 9.3978469 </td>
+   <td style="text-align:center;"> 6206623 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 119 </td>
+   <td style="text-align:center;"> Zimbabwe </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.7288253 </td>
+   <td style="text-align:center;"> 0.7447833 </td>
+   <td style="text-align:center;"> 12451543 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 120 </td>
+   <td style="text-align:center;"> Senegal </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.4504351 </td>
+   <td style="text-align:center;"> 0.2610367 </td>
+   <td style="text-align:center;"> 11787123 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 121 </td>
+   <td style="text-align:center;"> Turkmenistan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 11.1869805 </td>
+   <td style="text-align:center;"> 4.4937471 </td>
+   <td style="text-align:center;"> 4918396 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 122 </td>
+   <td style="text-align:center;"> Uzbekistan </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 4.6581427 </td>
+   <td style="text-align:center;"> 1.8497196 </td>
+   <td style="text-align:center;"> 26811974 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 123 </td>
+   <td style="text-align:center;"> Myanmar </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 0.2702839 </td>
+   <td style="text-align:center;"> 0.3181536 </td>
+   <td style="text-align:center;"> 47250315 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 124 </td>
+   <td style="text-align:center;"> Slovak Republic </td>
+   <td style="text-align:center;"> 2008 </td>
+   <td style="text-align:center;"> 6.9016545 </td>
+   <td style="text-align:center;"> 3.3854885 </td>
+   <td style="text-align:center;"> 5441304 </td>
+  </tr>
+</tbody>
+</table>
+      </div>
+    </div>
+
+    <!-- help guide -->
+    <div class = "help-overlay">
+      <div class= "help-info">
+        <h4> <span class = "glyphicon glyphicon-question-sign title"> </span> Help </h4>
+        <span class = "glyphicon glyphicon-stats"> </span><strong> Plot </strong> show/hide plot <br />
+        <span class = "glyphicon glyphicon-list-alt"> </span><strong> Table </strong> show/hide table <br/>
+        <span class = "glyphicon glyphicon-refresh"> </span><strong> Reset </strong> clear all selections/return <br />
+        <strong>Variable to display</strong> select variable/s to display in plot <br/>
+        <br/>
+        <h5>PLOT SELECTION</h5>
+        <strong> Click </strong> for a single selection <br />
+        Hold <strong>Shift + Click</strong> for multiple selections  <br/>
+        (disabled for bar charts) <br/>
+        <strong>Drag + hold</strong> to draw a selection box <br/>
+        <br/>
+        <h5> TABLE SELECTION </h5> (disabled for bar charts) <br/>
+        <strong> Click </strong> on a row for a single selection <br />
+        Click again on the same row to deselect it <br />
+        <br/>
+        <h5>ADDITIONAL FEATURES FOR MAPS</h5>
+        <strong>Slider:</strong> Drag to view a certain time period <br />
+        <strong>Pan and Zoom:</strong> Drag/scroll mouse <br />
+        <hr />
+        Found a bug or got suggestions? Contact us!  <br/>
+        <a href="https://www.stat.auckland.ac.nz/~wild/iNZight/support/contact/">
+          <img alt = "inzight-logo" class="logo" src = "https://www.stat.auckland.ac.nz/~wild/iNZight/img/inzight_transp.png" />
+        </a>
+      </div>
+    </div>
+<script type='text/javascript'> var chart = {"type":["scatter"],"varNames":["Country","Year","CO2Emissions","EnergyUsePerPerson","Populationtotal"],"data":[{"Country":"Turkey","Year":2008,"CO2Emissions":4.0219,"EnergyUsePerPerson":1.3888,"Populationtotal":70923730},{"Country":"Libya","Year":2008,"CO2Emissions":9.8183,"EnergyUsePerPerson":3.9794,"Populationtotal":6149620},{"Country":"Costa Rica","Year":2008,"CO2Emissions":1.9119,"EnergyUsePerPerson":1.0145,"Populationtotal":4522124},{"Country":"Denmark","Year":2008,"CO2Emissions":8.5215,"EnergyUsePerPerson":3.4951,"Populationtotal":5497312},{"Country":"China","Year":2008,"CO2Emissions":5.2979,"EnergyUsePerPerson":1.5748,"Populationtotal":1328275524},{"Country":"Sri Lanka","Year":2008,"CO2Emissions":0.581,"EnergyUsePerPerson":0.4423,"Populationtotal":20473799},{"Country":"France","Year":2008,"CO2Emissions":6.0703,"EnergyUsePerPerson":4.1136,"Populationtotal":62098413},{"Country":"Gabon","Year":2008,"CO2Emissions":1.5548,"EnergyUsePerPerson":1.3717,"Populationtotal":1450310},{"Country":"Jordan","Year":2008,"CO2Emissions":3.6629,"EnergyUsePerPerson":1.2215,"Populationtotal":5848952},{"Country":"Germany","Year":2008,"CO2Emissions":9.5372,"EnergyUsePerPerson":4.069,"Populationtotal":82475271},{"Country":"Kuwait","Year":2008,"CO2Emissions":31.2947,"EnergyUsePerPerson":10.9351,"Populationtotal":2548351},{"Country":"Yemen","Year":2008,"CO2Emissions":1.0008,"EnergyUsePerPerson":0.3157},{"Country":"Slovenia","Year":2008,"CO2Emissions":8.5009,"EnergyUsePerPerson":3.829,"Populationtotal":2018172},{"Country":"Nepal","Year":2008,"CO2Emissions":0.1054,"EnergyUsePerPerson":0.3321,"Populationtotal":28905358},{"Country":"Malta","Year":2008,"CO2Emissions":6.1828,"EnergyUsePerPerson":2.0308,"Populationtotal":413946},{"Country":"Norway","Year":2008,"CO2Emissions":10.5298,"EnergyUsePerPerson":6.25,"Populationtotal":4778959},{"Country":"Trinidad and Tobago","Year":2008,"CO2Emissions":35.3736,"EnergyUsePerPerson":14.5308,"Populationtotal":1331040},{"Country":"India","Year":2008,"CO2Emissions":1.5132,"EnergyUsePerPerson":0.5257,"Populationtotal":1190863679},{"Country":"Ghana","Year":2008,"CO2Emissions":0.3666,"EnergyUsePerPerson":0.385,"Populationtotal":23264176},{"Country":"Iraq","Year":2008,"CO2Emissions":3.7906,"EnergyUsePerPerson":0.9428,"Populationtotal":29821136},{"Country":"South Africa","Year":2008,"CO2Emissions":9.4266,"EnergyUsePerPerson":3.0276,"Populationtotal":49319363},{"Country":"Cambodia","Year":2008,"CO2Emissions":0.3584,"EnergyUsePerPerson":0.2542,"Populationtotal":13822644},{"Country":"Serbia","Year":2008,"CO2Emissions":5.2861,"EnergyUsePerPerson":2.2946,"Populationtotal":9841360},{"Country":"Colombia","Year":2008,"CO2Emissions":1.4761,"EnergyUsePerPerson":0.649,"Populationtotal":45005782},{"Country":"Ireland","Year":2008,"CO2Emissions":9.971,"EnergyUsePerPerson":3.3793,"Populationtotal":4352866},{"Country":"Mongolia","Year":2008,"CO2Emissions":4.1018,"EnergyUsePerPerson":1.1831,"Populationtotal":2667474},{"Country":"Eritrea","Year":2008,"CO2Emissions":0.0837,"EnergyUsePerPerson":0.1369,"Populationtotal":4947521},{"Country":"Israel","Year":2008,"CO2Emissions":9.7716,"EnergyUsePerPerson":3.131,"Populationtotal":7092324},{"Country":"Lithuania","Year":2008,"CO2Emissions":4.5028,"EnergyUsePerPerson":2.8084,"Populationtotal":3359799},{"Country":"Bangladesh","Year":2008,"CO2Emissions":0.3192,"EnergyUsePerPerson":0.1911,"Populationtotal":145478300},{"Country":"Croatia","Year":2008,"CO2Emissions":5.2896,"EnergyUsePerPerson":2.0432,"Populationtotal":4418387},{"Country":"Nicaragua","Year":2008,"CO2Emissions":0.7827,"EnergyUsePerPerson":0.5409,"Populationtotal":5635577},{"Country":"Australia","Year":2008,"CO2Emissions":18.2657,"EnergyUsePerPerson":5.7788,"Populationtotal":21513817},{"Country":"Peru","Year":2008,"CO2Emissions":1.45,"EnergyUsePerPerson":0.5286,"Populationtotal":28463338},{"Country":"Panama","Year":2008,"CO2Emissions":1.9967,"EnergyUsePerPerson":0.9147,"Populationtotal":3406487},{"Country":"Luxembourg","Year":2008,"CO2Emissions":21.8969,"EnergyUsePerPerson":8.6098,"Populationtotal":486781},{"Country":"Bulgaria","Year":2008,"CO2Emissions":6.6901,"EnergyUsePerPerson":2.5961,"Populationtotal":7591322},{"Country":"Austria","Year":2008,"CO2Emissions":8.1788,"EnergyUsePerPerson":4.0238,"Populationtotal":8341806},{"Country":"Latvia","Year":2008,"CO2Emissions":3.3418,"EnergyUsePerPerson":1.979,"Populationtotal":2271198},{"Country":"Italy","Year":2008,"CO2Emissions":7.4689,"EnergyUsePerPerson":2.9416,"Populationtotal":59891479},{"Country":"Morocco","Year":2008,"CO2Emissions":1.6362,"EnergyUsePerPerson":0.4786,"Populationtotal":31321453},{"Country":"Singapore","Year":2008,"CO2Emissions":6.5708,"EnergyUsePerPerson":4.9237,"Populationtotal":4772216},{"Country":"Romania","Year":2008,"CO2Emissions":4.3891,"EnergyUsePerPerson":1.8384,"Populationtotal":21589544},{"Country":"Sweden","Year":2008,"CO2Emissions":5.3157,"EnergyUsePerPerson":5.38,"Populationtotal":9236872},{"Country":"Egypt","Year":2008,"CO2Emissions":2.685,"EnergyUsePerPerson":0.9175,"Populationtotal":78323298},{"Country":"Algeria","Year":2008,"CO2Emissions":3.2327,"EnergyUsePerPerson":1.0876,"Populationtotal":34428028},{"Country":"Vietnam","Year":2008,"CO2Emissions":1.4934,"EnergyUsePerPerson":0.5755,"Populationtotal":85951912},{"Country":"Brunei","Year":2008,"CO2Emissions":27.6028,"EnergyUsePerPerson":9.4335,"Populationtotal":384695},{"Country":"Switzerland","Year":2008,"CO2Emissions":5.3331,"EnergyUsePerPerson":3.5013,"Populationtotal":7573204},{"Country":"Belarus","Year":2008,"CO2Emissions":6.4882,"EnergyUsePerPerson":2.9312,"Populationtotal":9680690},{"Country":"Bahrain","Year":2008,"CO2Emissions":23.09,"EnergyUsePerPerson":8.7847,"Populationtotal":1052359},{"Country":"Angola","Year":2008,"CO2Emissions":1.4426,"EnergyUsePerPerson":0.6576,"Populationtotal":18037964},{"Country":"Estonia","Year":2008,"CO2Emissions":13.6952,"EnergyUsePerPerson":4.0579,"Populationtotal":1342145},{"Country":"Philippines","Year":2008,"CO2Emissions":0.7628,"EnergyUsePerPerson":0.4437,"Populationtotal":90173139},{"Country":"Benin","Year":2008,"CO2Emissions":0.5375,"EnergyUsePerPerson":0.3925,"Populationtotal":8355980},{"Country":"Spain","Year":2008,"CO2Emissions":7.2931,"EnergyUsePerPerson":3.0519,"Populationtotal":45146258},{"Country":"Honduras","Year":2008,"CO2Emissions":1.1654,"EnergyUsePerPerson":0.6364,"Populationtotal":7302742},{"Country":"Finland","Year":2008,"CO2Emissions":10.5482,"EnergyUsePerPerson":6.6388,"Populationtotal":5316334},{"Country":"Sudan","Year":2008,"CO2Emissions":0.365,"EnergyUsePerPerson":0.3643,"Populationtotal":32941836},{"Country":"Tunisia","Year":2008,"CO2Emissions":2.4407,"EnergyUsePerPerson":0.9127,"Populationtotal":10247325},{"Country":"Guatemala","Year":2008,"CO2Emissions":0.9119,"EnergyUsePerPerson":0.5958,"Populationtotal":13690846},{"Country":"Chile","Year":2008,"CO2Emissions":4.2079,"EnergyUsePerPerson":1.8046,"Populationtotal":16795593},{"Country":"Argentina","Year":2008,"CO2Emissions":4.5856,"EnergyUsePerPerson":1.9302,"Populationtotal":39714298},{"Country":"Iran","Year":2008,"CO2Emissions":8.025,"EnergyUsePerPerson":2.8192,"Populationtotal":72289291},{"Country":"Pakistan","Year":2008,"CO2Emissions":0.9507,"EnergyUsePerPerson":0.4874,"Populationtotal":167442258},{"Country":"Kazakhstan","Year":2008,"CO2Emissions":14.6544,"EnergyUsePerPerson":4.479,"Populationtotal":15655345},{"Country":"Lebanon","Year":2008,"CO2Emissions":4.0865,"EnergyUsePerPerson":1.3019,"Populationtotal":4166915},{"Country":"Hungary","Year":2008,"CO2Emissions":5.4529,"EnergyUsePerPerson":2.6358,"Populationtotal":10021886},{"Country":"Uruguay","Year":2008,"CO2Emissions":2.4898,"EnergyUsePerPerson":1.2457,"Populationtotal":3345967},{"Country":"Cuba","Year":2008,"CO2Emissions":2.6442,"EnergyUsePerPerson":0.9329,"Populationtotal":11266905},{"Country":"Mozambique","Year":2008,"CO2Emissions":0.1044,"EnergyUsePerPerson":0.4206,"Populationtotal":22332900},{"Country":"Paraguay","Year":2008,"CO2Emissions":0.6986,"EnergyUsePerPerson":0.6979,"Populationtotal":6230242},{"Country":"Venezuela","Year":2008,"CO2Emissions":6.4967,"EnergyUsePerPerson":2.5118,"Populationtotal":28057485},{"Country":"Azerbaijan","Year":2008,"CO2Emissions":5.9184,"EnergyUsePerPerson":1.5155,"Populationtotal":8943600},{"Country":"Namibia","Year":2008,"CO2Emissions":1.908,"EnergyUsePerPerson":0.7383,"Populationtotal":2200422},{"Country":"Indonesia","Year":2008,"CO2Emissions":1.7555,"EnergyUsePerPerson":0.7956,"Populationtotal":234951154},{"Country":"Iceland","Year":2008,"CO2Emissions":7.1406,"EnergyUsePerPerson":16.8685,"Populationtotal":310666},{"Country":"Bolivia","Year":2008,"CO2Emissions":1.4421,"EnergyUsePerPerson":0.6179,"Populationtotal":9618466},{"Country":"United Kingdom","Year":2008,"CO2Emissions":8.5229,"EnergyUsePerPerson":3.3944,"Populationtotal":61270318},{"Country":"Bosnia and Herzegovina","Year":2008,"CO2Emissions":8.2686,"EnergyUsePerPerson":1.5776,"Populationtotal":3774164},{"Country":"Japan","Year":2008,"CO2Emissions":9.5427,"EnergyUsePerPerson":3.8789,"Populationtotal":126544640},{"Country":"Poland","Year":2008,"CO2Emissions":8.269,"EnergyUsePerPerson":2.5676,"Populationtotal":38218462},{"Country":"Netherlands","Year":2008,"CO2Emissions":10.533,"EnergyUsePerPerson":4.8372,"Populationtotal":16503263},{"Country":"Georgia","Year":2008,"CO2Emissions":1.4194,"EnergyUsePerPerson":0.6854,"Populationtotal":4394018},{"Country":"Botswana","Year":2008,"CO2Emissions":2.5472,"EnergyUsePerPerson":1.1007,"Populationtotal":1954822},{"Country":"Belgium","Year":2008,"CO2Emissions":9.89,"EnergyUsePerPerson":5.4696,"Populationtotal":10602167},{"Country":"Togo","Year":2008,"CO2Emissions":0.252,"EnergyUsePerPerson":0.4436,"Populationtotal":5776837},{"Country":"Brazil","Year":2008,"CO2Emissions":2.0238,"EnergyUsePerPerson":1.2965,"Populationtotal":191543237},{"Country":"Armenia","Year":2008,"CO2Emissions":1.8041,"EnergyUsePerPerson":0.9732,"Populationtotal":3079087},{"Country":"Canada","Year":2008,"CO2Emissions":16.3504,"EnergyUsePerPerson":7.9458,"Populationtotal":33327954},{"Country":"Oman","Year":2008,"CO2Emissions":15.9586,"EnergyUsePerPerson":6.0256,"Populationtotal":2636963},{"Country":"Mexico","Year":2008,"CO2Emissions":4.3081,"EnergyUsePerPerson":1.6369,"Populationtotal":110627158},{"Country":"United States of America","Year":2008,"CO2Emissions":18.546,"EnergyUsePerPerson":7.4879,"Populationtotal":304989064},{"Country":"Kenya","Year":2008,"CO2Emissions":0.2663,"EnergyUsePerPerson":0.461,"Populationtotal":38455418},{"Country":"Ukraine","Year":2008,"CO2Emissions":7.0367,"EnergyUsePerPerson":2.9431,"Populationtotal":45991584},{"Country":"Malaysia","Year":2008,"CO2Emissions":7.6124,"EnergyUsePerPerson":2.6546,"Populationtotal":27502008},{"Country":"Haiti","Year":2008,"CO2Emissions":0.2501,"EnergyUsePerPerson":0.2848,"Populationtotal":9736332},{"Country":"Portugal","Year":2008,"CO2Emissions":5.4869,"EnergyUsePerPerson":2.2999,"Populationtotal":10634612},{"Country":"Zambia","Year":2008,"CO2Emissions":0.1558,"EnergyUsePerPerson":0.6173,"Populationtotal":12379612},{"Country":"Ecuador","Year":2008,"CO2Emissions":2.1105,"EnergyUsePerPerson":0.7845,"Populationtotal":14056740},{"Country":"Greece","Year":2008,"CO2Emissions":8.6619,"EnergyUsePerPerson":2.707,"Populationtotal":11291807},{"Country":"Russian Federation","Year":2008,"CO2Emissions":11.9829,"EnergyUsePerPerson":4.8502,"Populationtotal":143163100},{"Country":"Thailand","Year":2008,"CO2Emissions":4.1556,"EnergyUsePerPerson":1.577,"Populationtotal":68267982},{"Country":"Cameroon","Year":2008,"CO2Emissions":0.2955,"EnergyUsePerPerson":0.3409,"Populationtotal":18758778},{"Country":"Qatar","Year":2008,"CO2Emissions":48.5944,"EnergyUsePerPerson":15.3104,"Populationtotal":1396060},{"Country":"Montenegro","Year":2008,"CO2Emissions":7.8673,"EnergyUsePerPerson":1.3114,"Populationtotal":629185},{"Country":"North Korea","Year":2008,"CO2Emissions":3.254,"EnergyUsePerPerson":0.8358},{"Country":"Nigeria","Year":2008,"CO2Emissions":0.6154,"EnergyUsePerPerson":0.7381,"Populationtotal":150665730},{"Country":"Tajikistan","Year":2008,"CO2Emissions":0.4636,"EnergyUsePerPerson":0.3693,"Populationtotal":6691416},{"Country":"Albania","Year":2008,"CO2Emissions":1.2978,"EnergyUsePerPerson":0.6557,"Populationtotal":3181397},{"Country":"El Salvador","Year":2008,"CO2Emissions":1.0636,"EnergyUsePerPerson":0.734,"Populationtotal":6129628},{"Country":"Ethiopia","Year":2008,"CO2Emissions":0.0895,"EnergyUsePerPerson":0.3959,"Populationtotal":79446419},{"Country":"New Zealand","Year":2008,"CO2Emissions":7.8737,"EnergyUsePerPerson":4.0791,"Populationtotal":4277809},{"Country":"Cote d'Ivoire","Year":2008,"CO2Emissions":0.3694,"EnergyUsePerPerson":0.5413,"Populationtotal":18987007},{"Country":"Cyprus","Year":2008,"CO2Emissions":7.9427,"EnergyUsePerPerson":2.4013,"Populationtotal":1077001},{"Country":"Saudi Arabia","Year":2008,"CO2Emissions":15.9822,"EnergyUsePerPerson":5.8882,"Populationtotal":26166639},{"Country":"Jamaica","Year":2008,"CO2Emissions":4.3915,"EnergyUsePerPerson":1.5867,"Populationtotal":2720282},{"Country":"United Arab Emirates","Year":2008,"CO2Emissions":24.6568,"EnergyUsePerPerson":9.3978,"Populationtotal":6206623},{"Country":"Zimbabwe","Year":2008,"CO2Emissions":0.7288,"EnergyUsePerPerson":0.7448,"Populationtotal":12451543},{"Country":"Senegal","Year":2008,"CO2Emissions":0.4504,"EnergyUsePerPerson":0.261,"Populationtotal":11787123},{"Country":"Turkmenistan","Year":2008,"CO2Emissions":11.187,"EnergyUsePerPerson":4.4937,"Populationtotal":4918396},{"Country":"Uzbekistan","Year":2008,"CO2Emissions":4.6581,"EnergyUsePerPerson":1.8497,"Populationtotal":26811974},{"Country":"Myanmar","Year":2008,"CO2Emissions":0.2703,"EnergyUsePerPerson":0.3182,"Populationtotal":47250315},{"Country":"Slovak Republic","Year":2008,"CO2Emissions":6.9017,"EnergyUsePerPerson":3.3855,"Populationtotal":5441304}],"colGroupNo":[225],"trendInfo":{"linear":[0.4412,0.355,0.88],"quadratic":[null],"cubic":[null],"rank.cor":[0.9534]}};
+/** Interactivity for iNZightPlots
+ * For each plot there's a sub-class which extends with this class `inzplot`.
+ * This class applies for all single panel plots generated with the iNZightPlots
+ * package in R.
+ * Functions that apply for this class apply for all subclasses.
+ * Hierarchy of plots: inzplot -> {hexbin, histogram, dotscatter, bar}
+ *                     inzmap -> {region, centroid, sparklines}
+ * Additional classes/components: boxplot, legend, table, sparkplot
+ * @param {Object} chart - chart.json from R (which includes all data, and
+ * other params for identifying the chart originally drawn in R)
+ * The relevant plot class is called in the onload function (scroll to the bottom of
+ * this script, or search for 'ON LOAD FUNCTION').
+ * NOTE: If it so happens that iNZightPlots gets rewritten/gridSVG no longer gets used,
+ * it's best to rewrite everything.
+ * Naming of grid objects is very important especially when exporting with gridSVG
+ * for targeting certain elements and groups of elements. */
+class Inzplot {
+
+  constructor(chart) {
+    // set svg so that there's variable width and height based on div
+    this.svg = d3.select("svg")
+                 .attr("width", null)
+                 .attr("height", null);
+    this.chart = chart;
+    this.chartType = chart.type[0];
+    this.data = chart.data;
+    this.count = this.data.length;
+    this.Grob = this.getGrob(this.chartType);
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    this.panel = document.getElementById(this.Grob);
+  }
+
+  // create a tooltip for the plot
+  setTooltip(width, height = null) {
+    var tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .attr("id", "tooltip")
+                    .style("width", width)
+                    .style("height", height);
+    this.tooltip = tooltip;
+    return tooltip;
+  }
+
+  /** Identifying the 'Grob' in the chart
+   * (where do all our bars/dots/hexagons lie?)
+   * @param {String} chartType - the type of chart identified
+   * @return Grob identifier */
+  getGrob(chartType) {
+    var polygon = document.getElementsByTagName('polygon'),
+        p, Grob;
+    switch(chartType) {
+      case "hist":
+      p = polygon[2];
+      break;
+
+      case "bar":
+      p = polygon[polygon.length - 1];
+      break;
+
+      case "dot":
+      Grob = 'g[id^="inz-DOTPOINTS."]';
+      break;
+
+      case "scatter":
+      // test if there's a raster map (originally GRID.rastergrob)
+      // OR: you could change the grid name in iNZightMaps package to inz-SCATTERPOINTS...
+       Grob = (document.querySelectorAll('g[id^="background.map"]').length > 0) ?
+              'g[id^="SCATTERPOINTS."]' : 'g[id^="inz-SCATTERPOINTS."]';
+      break;
+
+      default:
+      // for hexbins, bp-stacked
+      p = polygon[0];
+      break;
+    }
+
+    if (p) {
+      var id = p.getAttribute('id');
+      Grob = id.substring(0, id.lastIndexOf('.'));
+    }
+
+    return Grob;
+  }
+
+  // Functions for enabling brushing over elements (selection box)
+  // `brushmove` differs for each plot (depending on what is being
+  // accumulated) - see respective subclasses to change this
+
+  /** Enable brushing on plot
+   * @param node - an element to target and add brush to
+   * @param {Number} selector - where exactly do you want to insert brush
+   * @param {Boolean} text - if an additional paragraph should be added
+   * This is generally true for histograms/hexbins to show accumulated data when
+   * brushing, otherwise false. */
+  enableBrush(node, selector, direction = "xy", text = false) {
+    if (text) {
+      d3.select('#control').append("p")
+                   .attr('class', 'brush-info');
+    }
+
+    // append brush:
+    var svg = d3.select('svg');
+    var brush = (direction === "x") ? d3.brushX() : d3.brush();
+
+    brush.on("start", this.brushstart)
+         .on("brush", this.brushmove)
+         .on("end", this.brushend);
+
+    d3.select(node)
+      .insert("g", "g:nth-child(" + selector + ")")
+      .attr("class", "brush")
+      .call(brush);
+
+    // make handles invisible:
+    d3.selectAll('.handle')
+      .style('opacity', 0);
+    d3.select('.overlay')
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .style('stroke', 'none');
+  }
+
+  brushend() {
+    if (!d3.event.selection) {
+      d3.select(".selection")
+        .style("display", "none");
+    }
+  }
+
+  // When user begins brushing
+  brushstart() {
+    d3.select(".selection")
+      .style("display", null);
+  }
+
+}
+
+/** TABLE CLASS
+ * Includes setup with the DataTables library
+ * Any additional functions related to the table can be added here */
+class Table {
+
+  constructor(chartType) {
+    this.chartType = chartType;
+  }
+
+  /** Initializing table using DataTables
+   * To apply styles and formats onto table from the DataTables library
+   * @param {string} chartType - type of chart shown
+   * For bar plots, rows and columns ordering should be disabled (to link
+   * cells properly to bars + additional rows added)
+   * For all other plots, there's an ID column added where each row represents
+   * an element (a bar, a point, a region, a hexagon, e.t.c). */
+  setDT(chartType) {
+    var table;
+
+    if (chartType === "bar" || chartType === "bp-stacked") {
+      table = $('#table').DataTable({
+          "colReorder": true,
+          //disable ordering and sorting
+          "ordering": false,
+          "aaSorting": []
+      });
+    } else {
+      table = $('#table').DataTable({
+          "colReorder": true,
+          "columnDefs": [
+            { //hide rowID column
+              "targets": [0],
+              "visible": false
+            }
+          ]
+        });
+    }
+    this.DT = table;
+  }
+
+  // This is used to drive the table button
+  // For bar plots, it will hide percent/count conversion buttons
+  showTable() {
+    $('#table_wrapper').toggleClass('hidden');
+    $('.Percentage').toggleClass('hidden');
+    $('.Count').toggleClass('hidden');
+  }
+
+  // Table to plot linking:
+  tableToPlot(table, panel, element) {
+    $('#table tbody').on('click', 'tr', function() {
+      $(this).toggleClass('active');
+          let ind = table.rows('.active')[0];
+          let selector = "." + element;
+          d3.select(panel).selectAll(selector)
+            .attr("class", function(d, i) {
+                return (ind.includes(i) ? element + " selected" : element + " none");
+        });
+      //clear brush
+      d3.selectAll('.selection')
+        .style("display", "none");
+    });
+  }
+
+  // This is used to widen columns when there are more than 3
+  // columns in the table
+  widenColumns() {
+    // make tables not go wide when there's only 1 column
+    if (chart.type !== "bar") {
+      var ncol = $("#table thead tr th").length;
+      if (ncol < 3) {
+        $('#table').css('width', '50%');
+      } else if (ncol <= 4) {
+        $('#table').css('width', '75%');
+      } else {
+        $('#table').css('width', '100%');
+      }
+    } else {
+      $('#table').css('width', '100%');
+    }
+  }
+
+  // initialize table
+  init() {
+    this.setDT(this.chartType);
+    this.widenColumns();
+    // attach event handlers:
+    d3.select("#viewTable")
+      .on("click", this.showTable);
+  }
+
+}
+
+
+/** BOX PLOT CLASS
+ * For setting up interactivity and labels for box plots
+ * In cases where there are box plots present on the plot
+ * (specifically for dot plots and histograms), this will attach interactivity
+ * and label parts of the box plot when the user hovers/clicks on the box plot
+ * @param {Object} chart - chart information from R
+ * (ie factor levels, generally defaults to 1) */
+class Boxplot {
+
+  constructor(chart) {
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    this.boxData = chart.boxData;
+    this.polygonBox = document.querySelectorAll('g[id^="inz-box."]');
+    this.boxLines = document.querySelectorAll('g[id^="inz-box-line."]');
+  }
+
+  /** Main function to process and add labels, along with interactions for the
+   * box plot
+   * @param {Number} levelNo - number of levels/factors in the plot
+   */
+  boxMe(levelNo) {
+    var polygonBoxes = this.polygonBox;
+    var boxLines = this.boxLines;
+
+    for (let i = 1; i <= levelNo; i++) { //separate boxes for each plot
+      var polygonBox = polygonBoxes[i-1].children;
+      var boxLine = boxLines[i-1].children;
+      for (let j = 0; j < 2; j++) {
+        polygonBox[j].setAttribute('class', 'box-' + i);
+        boxLine[j].setAttribute('class', 'box-' + i);
+      }
+      this.boxLabelSet(i, 0, 1, 0,'LQ');
+      this.boxLabelSet(i, 1, 2, 2, 'UQ');
+      this.boxLabelSet(i, 1, 0, 1, 'Median');
+      this.boxLabelSet(i, 1, 0, 3, 'Min');
+      this.boxLabelSet(i, 2, 1, 4, 'Max');
+    }
+
+    //Box Plot interactions:
+    for (let j = 1; j <= levelNo; j++) {
+    var box = document.getElementsByClassName('box-' + j);
+    for (let i = 0; i < box.length; i++) {
+      box[i].setAttribute('onmouseover', 'fillBox(' + j + ')');
+      box[i].setAttribute('onmouseout', 'normalBox(' + j + ')');
+      box[i].setAttribute('onclick', 'showBox(' + j + ')');
+      }
+    }
+
+  }
+
+  /** Create box labels (min, max, mean, lower quartile, upper quartile)
+   * This is used to append text onto the SVG
+   * @param {Number} i - designated number that indicates what label it is
+   * @param {String} textinput - the label
+   * @param panel - where to append these svg labels to (generally this.panel
+   * is already identified)
+   * @param {Number} x - x-coordinate of where label is positioned
+   * @param {Number} y - y-coordinate of where label is positioned
+   * @return Appends labels onto SVG in correct positions
+   */
+  boxLabel(i, textinput, panel, x, y) {
+  var boxLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    boxLabel.setAttribute('class', 'label boxData-' + i + ' hidden');
+    boxLabel.setAttributeNS(null, 'transform', 'translate(' + Number(x) + ',' + (Number(y) + 2) + ') scale(1, -1)');
+    boxLabel.setAttributeNS(null, 'id', textinput);
+
+    var textNode = document.createTextNode(textinput);
+    boxLabel.appendChild(textNode);
+    panel.appendChild(boxLabel);
+  }
+
+  /** Sets all labels relative to the box plot and its information
+   * This function sets all the labels for the box plot at once.
+   * @param {Number} i
+   * @param {Number} p
+   * @param {Number} r
+   * @param {Number} q
+   * @param {String} textinput - Label (either: Min, Max, Median, LQ, UQ)
+   */
+  boxLabelSet(i, p, r, q, textinput) {
+
+    if (textinput == "Min" ||  textinput == "Max") {
+      var line = document.getElementById('inz-box-line.1.1.' + i  + '.1.' + p); //i is levelNo.
+      // p will either be 1 or 2 -> 1 = minLine, 2 = maxLine
+      line.setAttribute('class', 'box-' + i);
+      var boxPoints = line.getAttribute('points').split(" ")[r].split(",");
+      var panel = line.parentNode;
+    } else {
+      var box = document.getElementsByClassName('box-' + i)[p];
+      // boxplot split into two boxes - lowerbox (p = 0) and upperbox (p = 1)
+      var boxPoints = box.getAttribute('points').split(" ")[r].split(",");
+      var panel = box.parentNode;
+    }
+
+    var x = boxPoints[0], y = boxPoints[1], text;
+
+    if (textinput == "Median") {
+      // move median label below the box plot
+     y = boxPoints[1] - 11;
+    }
+    if (this.levelNo === 1) {
+      text = textinput + ": " + this.boxData[q].quantiles;
+    } else {
+      text = textinput + ": " + this.boxData[i-1][q].quantiles;
+    }
+    // this is associated with the boxData imported from R.
+    //q = 0 (LQ), 1 (UQ), 2 (Median), 3 (Min), 4 (Max)
+    this.boxLabel(i, text, panel, x, y);
+  }
+
+  init() {
+    this.boxMe(this.levelNo);
+  }
+
+}
+
+// functions for box plot event handling:
+fillBox = function(j) {
+  d3.selectAll('.box-' + j)
+    .classed('fillBox', true);
+};
+
+normalBox = function(j) {
+  d3.selectAll('.box-' + j)
+    .classed('fillBox', false);
+  };
+
+showBox = function(j) {
+  var boxData = d3.selectAll('.boxData-' + j);
+    boxData.classed('hidden', !boxData.classed('hidden'));
+}
+
+class MeanIndicator {
+  constructor(props) {
+    console.log(props);
+    this.mean = props.meanData;
+    this.levelNo = (chart.levNames) ? chart.levNames.length : 1;
+    // this.boxData = chart.boxData;
+    this.meanPoint = document.querySelectorAll('g[id^="inz-mean."]');
+  }
+  
+  init() {
+    for (let i = 1; i <= this.levelNo; i++) {
+      this.addMouseOver(i - 1);
+    }
+  }
+  
+  addMouseOver(i) {
+    var x = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('x');
+    var y = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('y');
+    var transf = this.meanPoint[i].getElementsByTagName("use")[0].getAttribute('transform').toString();
+    
+    var d = transf.slice(transf.indexOf('translate(') + 10, -1).split(',');
+    
+    
+    var meanLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    // boxLabel.setAttribute('class', 'label boxData-' + i + ' hidden');
+    // meanLabel.setAttributeNS(null, 'x', x);
+    // meanLabel.setAttributeNS(null, 'y', y);
+    meanLabel.setAttributeNS(null, 'transform', 'translate(' + Number(x) + ', ' + (Number(y) - Number(d[1])) + ') scale(1, -1)');
+    meanLabel.setAttributeNS(null, 'dominant-baseline', 'baseline');
+    // meanLabel.setAttributeNS(null, 'text-anchor', 'start');
+    meanLabel.setAttribute('class', 'label hidden group-mean-label');
+    meanLabel.setAttribute('id', 'group-mean-' + i);
+    // boxLabel.setAttributeNS(null, 'id', textinput);
+    
+    var textNode = document.createTextNode(this.mean[i]);
+    meanLabel.appendChild(textNode);
+    this.meanPoint[i].appendChild(meanLabel);
+    
+    this.meanPoint[i].setAttribute('onclick', 'showMean(' + i + ')');
+    this.meanPoint[i].setAttribute('style', 'cursor: pointer');
+    
+    return this;
+  }
+}
+
+showMean = function(i) {
+  var boxData = d3.select('#group-mean-' + i);
+    boxData.classed('hidden', !boxData.classed('hidden'));
+}
+
+
+/** LEGEND CLASS
+ * For attaching legend interactivity
+ * Includes trend line interactivity for scatter plots
+ * Generally for coloured bar plots, colored dot plots and scatter plots
+ * @param props - generally refers to the plot class identified */
+class Legend {
+
+  constructor(props) {
+    this.legendLayout = document.getElementById('inz-leg-layout.1');
+    this.legLineLayout = document.getElementById('inz-leg-lines.1');
+    this.levelNo = (props.levelNo) ? props.levelNo : 1;
+    this.chartType = props.chartType;
+    this.colGroupNo = props.colGroupNo;
+    this.varNames = props.chart.varNames;
+    this.Grob = props.Grob;
+    this.tbl = props.tbl;
+    this.trendInfo = props.chart.trendInfo;
+  }
+
+  // This is used to enable legend interactivity for dot plots and scatter plots
+  enableHandlers() {
+    if (!this.legendLayout) return;
+    let colGroupNo = this.colGroupNo;
+
+    //grab legend text and respective key:
+    let keyText = document.querySelectorAll('tspan[id^="inz-leg-txt-"]');
+    let key = document.querySelectorAll('use[id^="inz-leg-pt-"]');
+    let Grob = this.Grob;
+    let table = this.tbl;
+    let varNames = this.varNames;
+
+    function subset(i) {
+      let ind = i + 1;
+      //get the title variable:
+      var titleVar = document.getElementById('inz-leg-title.1.1.tspan.1').textContent;
+      var key = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      var keyText = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1').textContent;
+      var names = varNames;
+      var count = document.getElementsByClassName('point').length;
+      var el = document.querySelectorAll(Grob);
+
+      for (let j = 1; j <= count; j++) {
+          var point = document.getElementById(el[0].id + '.' + j);
+          if (key.getAttribute('fill') == point.getAttribute('stroke')) {
+              point.setAttribute('class', 'point selected');
+          } else {
+              point.setAttribute('class', 'point none');
+          }
+      }
+
+      // find column index + filter: (add one for hidden column)
+      var colInd = names.indexOf(titleVar) + 1;
+      table.search('').columns().search('').draw();
+      table.columns(colInd).search("^" + keyText + "$", true, false).draw();
+    }
+
+    this.addHandlers(subset);
+  }
+
+  /** Add interactivity to key and text in legend
+   * @param {Function} subset - A function to filter by a certain group when
+   * user clicks on the group (e.g. dots + table are filtered)
+   * In this case, the subset function is different for dot plots/scatter plots
+   * and for bar plots. However, the hovers are practically the same (show/out functions) */
+  addHandlers(subset) {
+    let keyText = document.querySelectorAll('tspan[id^="inz-leg-txt-"]');
+    let key = document.querySelectorAll('use[id^="inz-leg-pt-"]');
+
+    function show(i) {
+      let ind = i + 1;
+      let circle = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      let text = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1');
+      if (circle.getAttribute("fill") !== "none") {
+            text.setAttribute('fill', circle.getAttribute('fill'));
+        } else {
+            text.setAttribute('fill', circle.getAttribute('stroke'));
+        }
+      circle.setAttribute("class", "show");
+      text.setAttribute("class", "show");
+    }
+
+    function out(i) {
+      let ind = i + 1;
+      let keyText = document.getElementById('inz-leg-txt-' + ind + '.1.1.tspan.1');
+      let key = document.getElementById('inz-leg-pt-' + ind + '.1.1');
+      keyText.setAttribute("class", "out keyText");
+      key.setAttribute("class", "show");
+    }
+
+    // text handlers:
+    d3.selectAll(keyText)
+      .on("mouseover", (d, i) => show(i))
+      .on("mouseout", (d, i) => out(i))
+      .on("click", (d, i) => subset(i));
+
+    // circle handlers:
+    d3.selectAll(key)
+      .on("mouseover", (d, i) => show(i))
+      .on("mouseout", (d, i) => out(i))
+      .on("click", (d, i) => subset(i));
+  }
+
+  /** This is used to enable trend line interactivity
+   * Primarily adds interactivity to trend lines
+   * @param {String} t - trend line class ("linear", "quadratic", "cubic")
+   * @param {String} g - HTML label generated for the trend line
+   * @param ptip - d3 object for tooltip
+   * Only found on scatter plots only */
+  enableTrends(t, g, ptip) {
+    let legLineLayout = this.legLineLayout;
+
+    d3.select(legLineLayout).selectAll("." + t)
+    .on('mouseover', function() {
+        d3.select(this).style("opacity", 0.5);
+    })
+    .on('mouseout', function() {
+        d3.select(this).style("opacity", 1);
+    })
+    .on('click', function() {
+        d3.selectAll('.trend')
+        .classed('hidden', function() {
+          return((this.getAttribute('class').includes(t) === true) ? false : true);
+      });
+
+      return ptip.classed("hidden", false)
+                 .html(g);
+        });
+
+    d3.selectAll(".trend." + t)
+      .on("mouseover", function() {
+          d3.select(".tooltip")
+            .style("left", d3.event.pageX - 50 + "px")
+            .style("top", d3.event.pageY - 50 + "px")
+            .style("visibility", "visible")
+            .html(g);
+          })
+      .on("mouseout", function() {
+          d3.select(".tooltip")
+            .style("visibility", "hidden");
+          })
+  }
+
+  /** Get the equation of the trend line and create tooltip labels
+   * @param t - type of trend identified ("Linear", "Quadratic", "Cubic")
+   * @return returns HTML for tooltip label
+   * trendInfo is stored in chart information */
+  getEquation(t) {
+    let trendInfo = this.trendInfo;
+    switch(t) {
+        case "linear":
+        return "Linear fit:" + "<span> y = " + trendInfo[t][0] + " " +
+               (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + "</span> <br />" + "R" + "<sup>2</sup> : " + "<span>"
+               + trendInfo[t][2] + "</span>";
+        break;
+
+        case "quadratic":
+        return "Quadratic fit:" + "<span> y = " + trendInfo[t][0] + " "
+               + (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + (trendInfo[t][2] > 0 ? ("+" + trendInfo[t][2]) : trendInfo[t][2])
+               + "x<sup>2</sup>" + "</span>" + "<br />"+ "R" + "<sup>2</sup> : " + "<span>"
+               + trendInfo["rank.cor"][0] + "</span>";
+        break;
+
+        case "cubic":
+        return "Cubic fit: <span> y = " + trendInfo[t][0] + " " +
+               (trendInfo[t][1] > 0 ? ("+" + trendInfo[t][1]) : trendInfo[t][1])
+               + "x " + (trendInfo[t][2] > 0 ? ("+" + trendInfo[t][2]) : trendInfo[t][2])
+               + "x<sup>2</sup> " + (trendInfo[t][3] > 0 ? ("+" + trendInfo[t][3]) : trendInfo[t][3])
+               + "x<sup>3</sup> </span>" + "<br />" +  "R" + "<sup>2</sup> : <span>"
+               + trendInfo["rank.cor"][0] + "</span>";
+        break;
+
+        default:
+        return "Invalid trend!";
+    }
+  }
+
+  /** For identifying if there is a separate trend line legend present
+   * Main function for enabling interactivity for trend lines */
+  trendLegend() {
+    // if there is no legend, return:
+    if (!this.legLineLayout) return;
+
+    let trendInfo = this.trendInfo;
+    var lines = d3.select(this.legLineLayout).selectAll('polyline')
+                  .attr('class', function() {
+                    var id = this.id;
+                    var type = id.substring(id.lastIndexOf("-") + 1, id.indexOf("."));
+                    return type;
+                  });
+    var keys = d3.select(this.legLineLayout).selectAll('tspan')
+                 .attr('class', function() { return this.innerHTML; });
+
+    //insert text into the control panel:
+    var ptip = d3.select('#control')
+             .append("p")
+             .attr('class', 'trend-info')
+             .classed("hidden", true);
+
+   var ll = this.legLineLayout.querySelectorAll('tspan');
+
+   //loop over lines
+   for (var i = 0; i < ll.length; i++) {
+       var t = ll[i].innerHTML;
+       var line = document.getElementById('inz-trend-' + t + '.1.1.1.1');
+       line.setAttribute('class', t + ' trend');
+
+       var g = this.getEquation(t);
+       this.enableTrends(t, g, ptip);
+   }
+  }
+
+  // To initialize legend interactivity (both trendlines and groups)
+  init() {
+    // enable handlers on legend
+    this.enableHandlers();
+    //enable trend legend handlers:
+    this.trendLegend();
+  }
+
+}
+
+/** =================================================
+  ON LOAD FUNCTION
+  Facilitates all toggles on navigation bar and
+  initializes appropriate plot
+ ================================================== **/
+
+$(function() {
+  $(".view-tbl").click(function() {
+    $(".tbl-div").removeClass("expand").toggleClass("moveRight");
+    $(".svg-div").removeClass("moveLeft").toggleClass("mid");
+    // for bars:
+    $(".Percentage").toggleClass("hidden");
+    $(".Count").toggleClass("hidden");
+  });
+
+  $(".plot").click(function() {
+    $(".svg-div").removeClass("mid").toggleClass("moveLeft");
+    $(".tbl-div").removeClass("moveRight").toggleClass("expand");
+  });
+
+  $(".help").click(function() {
+    $(".help-overlay").toggleClass("move");
+  });
+
+  $(".help-overlay").click(function() {
+    $(".help-overlay").toggleClass("move");
+  });
+
+  // load chart:
+  var plot;
+
+  switch(chart.type[0]) {
+    //for inzplots:
+    case "hex":
+    plot = new Hexbin(chart);
+    break;
+
+    case "hist":
+    plot = new Histogram(chart);
+    break;
+
+    case "dot":
+    case "scatter":
+    plot = new DotScatter(chart);
+    break;
+
+    case "bar":
+    plot = new UnstackedBar(chart);
+    break;
+
+    case "bp-stacked":
+    plot = new StackedBar(chart);
+    break;
+
+    //for inzmaps:
+    case "region":
+    plot = new RegionMap(chart);
+    break;
+
+    case "point":
+    plot = new CentroidMap(chart);
+    break;
+
+    case "sparklines":
+    plot = new SparkMap(chart);
+    break;
+
+    default:
+    return;
+  }
+
+  plot.init();
+  console.log("Load complete!");
+
+});
+/** DOT PLOTS AND SCATTER PLOTS
+ * Class for initializing interactivity for dot plots and scatter plots
+ * Includes scatterplots drawn with iNZightMaps */
+class DotScatter extends Inzplot {
+
+  constructor(props) {
+    super(props);
+    this.panel = document.querySelector(this.Grob);
+    // bind event handlers:
+    this.reset = this.reset.bind(this);
+    this.brushmove = this.brushmove.bind(this);
+    this.filterTable = this.filterTable.bind(this);
+  }
+
+  // create options for variable selection:
+  createForm() {
+    d3.select(".menu").insert("li", ".help")
+      .attr("class", "var-control")
+    //create form
+    var form = d3.select(".var-control").append("div")
+                    .attr("class", "form-group form-inline form-div")
+                    .attr("id", "form");
+
+    form.append("label")
+        .html("Variables to display:");
+
+    form.append("select")
+        .attr("class", "form-control select-var")
+        .attr("id", "selectVar")
+        .attr("multiple", "multiple");
+
+    // get column names:
+    var ncol = $("#table thead tr th").length;
+    var th = document.getElementsByTagName('th');
+    for (var i = 0; i <= ncol; i++) {
+        var opt = document.createElement('option');
+        if (i == 0) {
+          opt.value = 0;
+          opt.classList.add('select');
+          opt.innerHTML = "Display all";
+          opt.selected = "selected";
+        } else {
+        opt.value = i;
+        opt.innerHTML = th[i-1].innerHTML;
+      }
+      selectVar.appendChild(opt);
+    };
+  }
+
+  //filter table
+  filterTable() {
+    let table = this.tbl,
+        levelNo = this.levelNo,
+        ind = [];
+    //search for all those that are selected, then extract id num:
+    var selected = document.getElementsByClassName('selected');
+    for (var j = 0; j < selected.length; j++) {
+        var id = selected[j].id;
+        if (levelNo > 1) {
+          // search for the middle number due to levels:
+          var mid = id.substring(0, id.lastIndexOf('.1.'));
+          var levNum = Number(mid.substring(mid.lastIndexOf('.') + 1));
+          var num = Number(id.substring(id.lastIndexOf('.') + 1));
+          // actual index in table:
+          var idNum = chart.countsTab[levNum - 1] + num;
+        } else {
+          var idNum = id.substring(id.lastIndexOf('.') + 1);
+        }
+        ind.push("^" + idNum + "$");
+    }
+
+    table.search('').columns().search('').draw();
+    table.columns(0).search(ind.join("|"), true, false).draw();
+  }
+
+  // set tooltip and point interactions
+  setHovers() {
+    var tooltip = this.tooltip,
+        Grob = document.querySelectorAll(this.Grob),
+        data = this.data,
+        levelNo = this.levelNo,
+        filterTable = this.filterTable,
+        table = this.tbl;
+
+    d3.selectAll(Grob).selectAll("use")
+      .attr("class", "point");
+
+      d3.selectAll('.point')
+        .data(data)
+        .attr('class', 'point')
+        .on('mouseover', function (d, i) {
+            var g = ' ';
+            var names = chart.varNames;
+            var selectVar = document.getElementsByTagName('select')[0];
+            var sOpt = selectVar.selectedOptions;
+            var s = [];
+            for (j = 0; j < sOpt.length; j++) {
+                s.push(Number(sOpt[j].value));
+              }
+
+            for (var j = 0; j < s.length; j++) {
+              if (s[j] !== undefined) {
+                var w = names[s[j]-1] + ": <span>"
+                var t =  data[i][names[s[j]-1]] + "</span> <br>"
+             }
+
+             var g = w + t + g;
+             var p = s.length;
+
+             if (s.includes(0)) {
+               var g = ' ';
+               for (var k = 0; k < names.length; k++) {
+                 var w = names[k] + ": <span>"
+                 var t =  data[i][names[k]] + "</span> <br>"
+               var g = w + t + g;
+               var p = names.length;
+             }
+           }
+         }
+
+         return tooltip.style('visibility', 'visible')
+                       .style("left", d3.event.pageX - 50 + "px")
+                       .style("top", d3.event.pageY - 30 - 15*(p-1) + "px")
+                       .html(g);
+          })
+          .on('mouseout', function () { return tooltip.style("visibility", 'hidden'); })
+          .on('click', function (d, i) {
+            var selected = this;
+            // clear selection box:
+            d3.selectAll('.selection')
+              .style("display", "none");
+
+            d3.selectAll('.point')
+              .attr("class", function() {
+                  if (!d3.event.shiftKey) {
+                    return (this === selected) ? "point selected" : "point none";
+                  } else {
+                    if (this.getAttribute('class') === "point selected") {
+                      return "point selected";
+                    } else if (this === selected) {
+                        return "point selected";
+                    } else {
+                      return "point none";
+                    }
+                }
+              });
+
+              filterTable();
+
+          })
+          .on('dblclick', function (d, i) { // deselect
+            var selected = this;
+             selected.setAttribute('class', 'point none');
+             filterTable();
+          });
+  }
+
+  // add brush to the plot
+  addBrush() {
+    var tag, selector;
+    // identify if a raster map is present (from iNZightMaps)
+    if (document.querySelectorAll('g[id^="background.map"]').length > 0) {
+      tag = "inz-plot-bg.1.1.1";
+      selector = 4;
+    }  else {
+      tag = "inz-x-grid.1.1.1";
+      selector = 4;
+    }
+
+    let pp = document.getElementById(tag).parentNode;
+    this.enableBrush(pp, selector, "xy", false);
+  }
+
+  brushmove() {
+    var s = d3.event.selection,
+        x1 = s[0][0],
+        x2 = s[1][0],
+        y1 = s[0][1],
+        y2 = s[1][1],
+        ind = [];
+
+    d3.selectAll('.point')
+          .attr('class', function(d, i) {
+            var selected = this;
+            var x = this.x.baseVal.value;
+            var y = this.y.baseVal.value;
+            if ((x1 <= x && x <= x2) && (y1 <= y && y <= y2)) {
+              return('point selected');
+            } else {
+              return('point none');
+            }
+          });
+
+    this.filterTable();
+  }
+
+  reset() {
+    d3.selectAll('.point')
+      .classed("none selected", false);
+
+    // restore table to original state
+    this.tbl.search('').columns().search('').draw();
+    this.tbl.rows().nodes().to$().removeClass('active');
+
+    d3.selectAll('.label')
+    .classed("hidden", true);
+
+    // clear selection box:
+    d3.selectAll('.selection')
+      .style("display", "none");
+
+    d3.selectAll('.trend')
+      .classed("hidden", false);
+
+    d3.select('.trend-info')
+      .classed("hidden", true);
+  }
+
+  init() {
+    //initialize table:
+    var tbl = new Table(this.chartType);
+    tbl.init();
+    tbl.tableToPlot(tbl.DT, this.panel, "point");
+    this.tbl = tbl.DT;
+
+    // set tooltip:
+    this.createForm();
+    this.setTooltip(100);
+    this.setHovers();
+    this.addBrush();
+
+    // init box plot if it's a dot plot and boxplots are enabled:
+    if (this.chartType === "dot" && this.chart.boxData.length > 0) {
+      var box = new Boxplot(this.chart);
+      box.init();
+    }
+    
+    if (this.chartType === 'dot' && this.chart.meanData.length > 0) {
+      var meanInds = new MeanIndicator(this.chart);
+      meanInds.init();
+    }
+
+    //enable legend interactions
+    let legend = new Legend(this);
+    legend.init();
+
+    //enable event handlers:
+    d3.select("#reset")
+      .on("click", this.reset);
+
+    d3.select(".overlay")
+      .on("dblclick", this.reset);
+  }
+
+} </script>
+  </body>
+</html>

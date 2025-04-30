@@ -1,5 +1,5 @@
 #load libreries #### 
-install.packages(c('iNZightPlots', 'FutureLearnData'), dependencies = TRUE, 
+install.packages(c('iNZightPlots', 'FutureLearnData', iNZightTS), dependencies = TRUE, 
               repos = c('https://r.docker.stat.auckland.ac.nz', 'https://cran.rstudio.com'))
 
 library(iNZightPlots)
@@ -7,10 +7,6 @@ library(FutureLearnData)
 library(colorspace)
 library(viridis)
 library(iNZightTS) 
-
-#load data
-
-data <- data(package="FutureLearnData")
 
 #load data ####
 
@@ -83,7 +79,7 @@ myplot = iNZightPlot(Education.reord, data=nhanes_1000,colby=Education.reord,col
 # Specify a location to store an Interactive HTML file. I will call my file "myintplot.html"
 # You will have to change the path to the file because this one is to a location on my desktop!
 
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot1.html" 
+filepath = "./myintplot1.html" 
 exportHTML(myplot, filepath)
 browseURL(filepath) #open the file up in my default browser
 
@@ -121,13 +117,13 @@ myplot = iNZightPlot(Height, data=nhanes_1000, colby=Age, col.fun=rainbow)
 
 # Specify a location to store an Interactive HTML file. I will call my file "myintplot.html"
 # You will have to change the path to the file because this one is to a location on my desktop!
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot2.html"
+filepath = "./myintplot2.html"
 exportHTML(myplot, filepath)
 browseURL(filepath) #open the file up in my default browser
 
 # If the plot is truncated make your R plotting window smaller
 # To add extra variables
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot3.html"
+filepath = "./myintplot3.html"
 exportHTML(myplot, filepath, data=nhanes_1000, extra.vars = c("Gender", "Weight"))
 browseURL(filepath) #open the file up in my default browser
 
@@ -162,7 +158,7 @@ myplot = iNZightPlot(ChildrenPerWoman, Region, data=gapminder_2008, colby=Infant
 
 # Specify a location to store an Interactive HTML file. I will call my file "myintplot.html"
 # You will have to change the path to the file because this one is to a location on my desktop!
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot4.html"
+filepath = "./myintplot4.html"
 exportHTML(myplot, filepath)
 browseURL(filepath) #open the file up in my default browser
 
@@ -219,7 +215,7 @@ myplot = iNZightPlot(ChildrenPerWoman,Year_cat,
             colby=ChildrenPerWoman, col.fun=rainbow, xlim = c(-10,8),
             )
 
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot5.html"
+filepath = "./myintplot5.html"
 exportHTML(myplot, filepath)
 browseURL(filepath) #open the file up in my default browser
 
@@ -362,7 +358,7 @@ myplot = iNZightPlot(CO2Emissions,
                      main="Energy use versus CO2 emissions")
 
 # plot and save like html
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot6.html"
+filepath = "./myintplot6.html"
 exportHTML(myplot, filepath)
 browseURL(filepath) #open the file up in my default browser  #open the file up in my default browser
 
@@ -409,7 +405,7 @@ iNZightPlot(Age, Weight, data=nhanes_1000, colby=Height, alpha=.3,
             quant.smooth=c(.25,.5,.75), col.smooth="black")
 
 iNZightPlot(Age, Weight, data=nhanes_1000, colby=Height, col.fun=viridis, alpha=.3, cex.pt=.5,
-            trend="cubic", col.trend=list(cubic="black"))
+            trend= c("cubic"), col.trend=list(cubic="black"))
 
 #  Jitter in the vertical (y) direction
 iNZightPlot(Age, HomeRooms, data=nhanes_1000)
@@ -422,7 +418,7 @@ myplot = iNZightPlot(Age, Weight, data=nhanes_1000, colby=Height, alpha=.3, cex.
 
 # Specify a location to store an Interactive HTML file. I will call my file "myintplot.html"
 # You will have to change the path to the file because this one is to a location on my desktop!
-filepath = "C://Users/Luis/Documents/Desktop/RStudio/Git/Data-to-Insight-An-Introduction-to-Data-Analysis-and-Visualisation/myintplot7.html"
+filepath = "./myintplot7.html"
 exportHTML(myplot, filepath)
 browseURL(filepath)    #open the file up in my default browser
 
@@ -486,7 +482,7 @@ iNZightPlot(ChildrenPerWoman, Infantmortality,
 
 # Subset by Populationtotal and Region=America and filter by  Year_Cat=1984
 iNZightPlot(ChildrenPerWoman, Infantmortality, 
-            g1=Year_cat, g1.level="[1984]", 
+            g1=Year_cat, g1.level="[1972]", 
             g2=Region, g2.level="America",
             data=gapminder, sizeby=Populationtotal, 
             colby=Country, color.fun= viridis, alpha=.45, cex.dotpt=.5, 
@@ -506,12 +502,20 @@ for (k in levels(gapminder$Year_cat)) {
           Sys.sleep(2)
 }
 
+
+### LIBRARY DEPRECATED ###
+
+# intead use ts.plot or other one.
+
+
+
+
 # time series for a single variable ####
 data(week8_AverageVisitorsQuarterly)
 head( week8_AverageVisitorsQuarterly)
 View(week8_AverageVisitorsQuarterly)
 
-Australia = iNZightTS(week8_AverageVisitorsQuarterly, var="Australia")
+Australia = inzightts(week8_AverageVisitorsQuarterly, var="Australia")
 
 # Plot the data -- t controls smoothing
 plot( Australia , t=20, ylab="Average Visitors")
@@ -537,12 +541,14 @@ recompose(decomp, animate=FALSE)
 recompose(decomp, animate=TRUE)
 
 # Calculate a forecast
+plot(Australia, forecast = 2 * Australia$freq, multiplicative=f)
+
 forecastplot( Australia )
 forecastplot(Australia, multiplicative=F)
 forecastplot(Australia, multiplicative=T)
 
 # Let establish this pattern for another country
-China = iNZightTS (week8_AverageVisitorsQuarterly, var= "China.PR")
+China = inzightts (week8_AverageVisitorsQuarterly, var= "China.PR")
 plot( China, t=20, ylab="Visitor Arrivals")
 decompositionplot( China, t=20, ylab="Average Visitors")
 
@@ -554,7 +560,8 @@ recompose(decomp, animate=FALSE)
 recompose(decomp, animate=TRUE)
 
 # Calculate a forecast
-forecastplot( China)
+plot(China, forecast = 2 * Australia$freq, multiplicative=f)
+forecastplot(China)
 forecastplot(China, multiplicative=F)
 forecastplot(China, multiplicative=TRUE)
 
@@ -564,13 +571,13 @@ c(2,5,9)
 c(2,4:6, 8)
 
 names(week8_AverageVisitorsQuarterly)
-Aus_USA = iNZightTS(week8_AverageVisitorsQuarterly, var=c(2,9))
+Aus_USA = inzightts(week8_AverageVisitorsQuarterly, var=c(2,9))
 # Alternative, use the names of the columns
-Aus_USA = iNZightTS(week8_AverageVisitorsQuarterly, var=c("Australia","USA"))
+Aus_USA = inzightts(week8_AverageVisitorsQuarterly, var=c("Australia","USA"))
 plot(Aus_USA, t=20, multiplicative=F) #additive seasonal efects
 plot(Aus_USA, t=20, multiplicative=T) #multiplicative seasonal efects
 
-jpn_can = iNZightTS(week8_AverageVisitorsQuarterly, var=c("Japan", "Canada"))
+jpn_can = inzightts(week8_AverageVisitorsQuarterly, var=c("Japan", "Canada"))
 plot(jpn_can, multiplicative=F) #additive seasonal efects
 plot(jpn_can, multiplicative=T) #multiplicative seasonal efects
 
@@ -578,7 +585,7 @@ plot(jpn_can, multiplicative=T) #multiplicative seasonal efects
 plot(Aus_USA, t=20, compare=FALSE, multiplicative=F)
 plot(jpn_can, t=20, compare=FALSE, multiplicative=F)
 
-ALL = iNZightTS(week8_AverageVisitorsQuarterly, var=c(2:9))
+ALL = inzightts(week8_AverageVisitorsQuarterly, var=c(2:9))
 plot(ALL, t=20)
 
 # Separate plots for ALL
